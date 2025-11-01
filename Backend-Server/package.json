@@ -1,0 +1,18 @@
+{
+  "name": "sourcetolive-backend",
+  "version": "0.1.0",
+  "description": "Backend server that queues ECS build tasks",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon index.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-ecs": "^3.922.0",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "morgan": "^1.10.1",
+    "nodemon": "^3.1.10"
+  }
+}
