@@ -8,7 +8,7 @@ app.use(express.json());
 app.use(morgan('dev'));
 
 // Project routes
-app.use('/project', projectRouter);
+app.use('/api/project', projectRouter);
 
 app.get('/', (req, res) => {
   res.send('Backend Server is running');
