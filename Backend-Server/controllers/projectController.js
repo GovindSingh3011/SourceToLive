@@ -1,9 +1,55 @@
 const { ECSClient, RunTaskCommand, ListTasksCommand, DescribeTasksCommand, DescribeTaskDefinitionCommand } = require('@aws-sdk/client-ecs');
-const { CloudWatchLogsClient, GetLogEventsCommand, CreateLogGroupCommand } = require('@aws-sdk/client-cloudwatch-logs');
+const { CloudWatchLogsClient, GetLogEventsCommand, CreateLogGroupCommand, DeleteLogStreamCommand } = require('@aws-sdk/client-cloudwatch-logs');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const config = require('../config');
 
 const ecsClient = new ECSClient({ region: config.AWS_REGION });
 const logsClient = new CloudWatchLogsClient({ region: config.AWS_REGION });
+const s3Client = new S3Client({ region: config.AWS_REGION });
+
+async function flushAndArchiveLogs(logGroupName, logStreamName, projectId) {
+
+  const events = [];
+  let nextToken = undefined;
+  let prevToken = undefined;
+  for (let i = 0; i < 1000; i++) {
+    const params = { logGroupName, logStreamName, startFromHead: true };
+    if (nextToken) params.nextToken = nextToken;
+    try {
+      const resp = await logsClient.send(new GetLogEventsCommand(params));
+      if (resp.events && resp.events.length > 0) events.push(...resp.events);
+
+      if (!resp.nextForwardToken || resp.nextForwardToken === prevToken) break;
+      prevToken = resp.nextForwardToken;
+      nextToken = resp.nextForwardToken;
+
+      await new Promise((r) => setTimeout(r, 200));
+    } catch (err) {
+      const msg = err?.message ?? String(err);
+      if (/log stream .* does not exist/i.test(msg) || /specified log stream does not exist/i.test(msg) || /log stream does not exist/i.test(msg)) {
+        break;
+      }
+      throw err;
+    }
+  }
+
+  const lines = events.map(ev => JSON.stringify({ ts: ev.timestamp, message: ev.message }));
+  const body = lines.join('\n') + '\n';
+
+  const bucket = config.S3_BUCKET;
+  const safeStreamName = logStreamName.replace(/[^a-zA-Z0-9._-]/g, '_');
+  const key = `__logs/${projectId}/${safeStreamName}.log`;
+  await s3Client.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: Buffer.from(body, 'utf8'), ContentType: 'text/plain' }));
+
+  try {
+    await logsClient.send(new DeleteLogStreamCommand({ logGroupName, logStreamName }));
+  } catch (delErr) {
+    const dmsg = delErr?.message ?? String(delErr);
+    if (!/does not exist/i.test(dmsg)) throw delErr;
+  }
+
+  return { bucket, key, count: events.length };
+}
 
 /**
  * POST /project
@@ -73,7 +119,6 @@ async function createProject(req, res) {
     const taskArn = result.tasks && result.tasks[0] && result.tasks[0].taskArn;
 
     return res.json({
-      status: 'queued',
       data: {
         PROJECT_ID,
         url: `http://${PROJECT_ID}.${config.APP_DOMAIN}`,
@@ -173,8 +218,6 @@ async function streamLogs(req, res) {
         const streamPrefix = logConf['awslogs-stream-prefix'];
         const logStreamName = `${streamPrefix}/${containerName}/${taskId}`;
 
-        writeEvent({ status: 'streaming', taskArn, logGroupName, logStreamName });
-
         let nextToken = undefined;
         let polling = true;
 
@@ -196,7 +239,12 @@ async function streamLogs(req, res) {
               const currentTask = desc.tasks && desc.tasks[0];
               const currentStatus = currentTask && currentTask.lastStatus;
               if (currentStatus === 'STOPPED') {
-                writeEvent({ status: 'finished', taskArn, lastStatus: currentStatus });
+                try {
+                  const resInfo = await flushAndArchiveLogs(logGroupName, logStreamName, projectId);
+                  } catch (archiveErr) {
+                  writeEvent({ status: 'archive-error', message: archiveErr?.message ?? String(archiveErr) });
+                }
+                writeEvent({ status: 'finished' });
                 clearInterval(intervalId);
                 return res.end();
               }
