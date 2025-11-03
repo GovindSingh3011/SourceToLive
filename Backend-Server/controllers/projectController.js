@@ -1,6 +1,6 @@
 const { ECSClient, RunTaskCommand, ListTasksCommand, DescribeTasksCommand, DescribeTaskDefinitionCommand } = require('@aws-sdk/client-ecs');
 const { CloudWatchLogsClient, GetLogEventsCommand, CreateLogGroupCommand, DeleteLogStreamCommand } = require('@aws-sdk/client-cloudwatch-logs');
-const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } = require('@aws-sdk/client-s3');
 const config = require('../config');
 
 const ecsClient = new ECSClient({ region: config.AWS_REGION });
@@ -37,8 +37,8 @@ async function flushAndArchiveLogs(logGroupName, logStreamName, projectId) {
   const body = lines.join('\n') + '\n';
 
   const bucket = config.S3_BUCKET;
-  const safeStreamName = logStreamName.replace(/[^a-zA-Z0-9._-]/g, '_');
-  const key = `__logs/${projectId}/${safeStreamName}.log`;
+  // Use a single archive file per project for simplicity: __logs/<projectId>.log
+  const key = `__logs/${projectId}.log`;
   await s3Client.send(new PutObjectCommand({ Bucket: bucket, Key: key, Body: Buffer.from(body, 'utf8'), ContentType: 'text/plain' }));
 
   try {
@@ -299,3 +299,83 @@ async function streamLogs(req, res) {
 }
 
 module.exports = { createProject, streamLogs };
+
+/**
+ * GET /project/:projectId/logs/archive
+ * If `?key=` is provided, streams the S3 object back as text/plain.
+ * Otherwise lists archived log objects under __logs/<projectId>/
+ */
+async function getArchivedLogs(req, res) {
+  const projectId = req.params.projectId;
+  if (!projectId) return res.status(400).json({ error: 'projectId param required' });
+
+  const bucket = config.S3_BUCKET;
+  if (!bucket) return res.status(500).json({ error: 'S3_BUCKET not configured on server' });
+
+  const key = req.query.key;
+  try {
+    if (key) {
+      const cmd = new GetObjectCommand({ Bucket: bucket, Key: key });
+      const resp = await s3Client.send(cmd);
+      const body = resp.Body;
+
+      let text = '';
+      if (body.pipe) {
+        await new Promise((resolve, reject) => {
+          body.setEncoding('utf8');
+          body.on('data', (chunk) => { text += chunk; });
+          body.on('end', resolve);
+          body.on('error', reject);
+        });
+      } else {
+        for await (const chunk of body) text += chunk.toString('utf8');
+      }
+
+      const lines = text.split(/\r?\n/).filter(Boolean);
+      const parsed = lines.map((ln) => {
+        try { return JSON.parse(ln); } catch (e) { return { message: ln }; }
+      });
+
+      res.setHeader('Content-Type', 'application/json');
+      return res.json({ bucket, key, items: parsed });
+    } else {
+      // If no key provided, return the content of the single archive file for the project if it exists
+      const keyForProject = `__logs/${projectId}.log`;
+      const listCmd = new ListObjectsV2Command({ Bucket: bucket, Prefix: keyForProject });
+      const listResp = await s3Client.send(listCmd);
+      const objects = (listResp.Contents || []).map(o => ({ Key: o.Key, Size: o.Size, LastModified: o.LastModified }));
+
+      if (!objects || objects.length === 0) {
+        return res.json({ bucket, objects: [] });
+      }
+
+      const archiveKey = objects[0].Key;
+      const cmd = new GetObjectCommand({ Bucket: bucket, Key: archiveKey });
+      const resp = await s3Client.send(cmd);
+      const body = resp.Body;
+
+      let text = '';
+      if (body.pipe) {
+        await new Promise((resolve, reject) => {
+          body.setEncoding('utf8');
+          body.on('data', (chunk) => { text += chunk; });
+          body.on('end', resolve);
+          body.on('error', reject);
+        });
+      } else {
+        for await (const chunk of body) text += chunk.toString('utf8');
+      }
+
+      const lines = text.split(/\r?\n/).filter(Boolean);
+      const parsed = lines.map((ln) => {
+        try { return JSON.parse(ln); } catch (e) { return { message: ln }; }
+      });
+
+      return res.json({ bucket, key: archiveKey, items: parsed });
+    }
+  } catch (err) {
+    return res.status(500).json({ error: err?.message ?? String(err) });
+  }
+}
+
+module.exports.getArchivedLogs = getArchivedLogs;
