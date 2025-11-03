@@ -17,4 +17,5 @@ module.exports = {
   AWS_SUBNETS: parseList('AWS_SUBNETS'),
   AWS_SECURITY_GROUPS: parseList('AWS_SECURITY_GROUPS'),
   APP_DOMAIN: process.env.APP_DOMAIN || 'localhost:8000',
+  S3_BUCKET: process.env.S3_BUCKET,
 };

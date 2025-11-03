@@ -16,6 +16,20 @@ const s3Client = new S3Client({
 
 const PROJECT_ID = process.env.PROJECT_ID
 
+function writeEvent(payload, level = 'info') {
+    let ev = {};
+    if (typeof payload === 'string') ev.message = payload;
+    else if (payload && typeof payload === 'object') ev = Object.assign({}, payload);
+    else ev.message = String(payload);
+    ev.ts = Date.now();
+    ev.level = ev.level || level;
+    try {
+        console.log(JSON.stringify(ev));
+    } catch (e) {
+        console.log(String(ev.message || ev));
+    }
+}
+
 function hasBuildScript(dir) {
     const pkgPath = path.join(dir, 'package.json')
     if (!fs.existsSync(pkgPath)) return false
@@ -56,10 +70,10 @@ function walkDir(dir) {
 }
 
 async function init() {
-    console.log('Executing script.js')
+    writeEvent('Executing script.js')
 
     if (!process.env.GITHUB_TOKEN) {
-        console.warn('Warning: GITHUB_TOKEN is not provided. If the repository is private, authentication will fail.')
+        writeEvent('Warning: GITHUB_TOKEN is not provided. If the repository is private, authentication will fail.', 'warn')
     }
 
     const outDirPath = path.join(__dirname, 'output')
@@ -67,14 +81,14 @@ async function init() {
     let distFolderPath = null
 
     if (hasBuildScript(outDirPath)) {
-        console.log('Detected build script. Running npm install && npm run build in output folder...')
+        writeEvent('Detected build script. Running npm install && npm run build in output folder...')
         const p = exec(`cd ${outDirPath} && npm install && npm run build`)
 
         p.stdout.on('data', function (data) {
-            console.log(data.toString())
+            writeEvent({ stream: 'stdout', message: data.toString() })
         })
         p.stderr && p.stderr.on && p.stderr.on('data', function (data) {
-            console.error(data.toString())
+            writeEvent({ stream: 'stderr', message: data.toString() }, 'error')
         })
 
         await new Promise((resolve, reject) => {
@@ -84,15 +98,15 @@ async function init() {
             })
         })
 
-        console.log('Build Complete')
+        writeEvent('Build Complete')
         distFolderPath = findBuildOutput(outDirPath) || path.join(outDirPath, 'dist')
     } else {
-        console.log('No build script found — treating project as static (HTML/CSS/JS). Uploading output/ contents directly.')
+        writeEvent('No build script found — treating project as static (HTML/CSS/JS). Uploading output/ contents directly.')
         distFolderPath = outDirPath
     }
 
     if (!fs.existsSync(distFolderPath) || !fs.lstatSync(distFolderPath).isDirectory()) {
-        console.error('Output folder not found:', distFolderPath)
+        writeEvent({ message: 'Output folder not found', path: distFolderPath }, 'error')
         return
     }
 
@@ -103,29 +117,29 @@ async function init() {
             const relativePath = path.relative(distFolderPath, filePath).replace(/\\/g, '/')
             if (!relativePath) continue
 
-            console.log('uploading', filePath)
+            writeEvent({ event: 'uploading', file: filePath })
 
             const contentType = mime.lookup(filePath) || 'application/octet-stream'
 
             const command = new PutObjectCommand({
-                Bucket: 'sourcetolive111',
+                Bucket: process.env.S3_BUCKET,
                 Key: `__outputs/${PROJECT_ID}/${relativePath}`,
                 Body: fs.createReadStream(filePath),
                 ContentType: contentType
             })
 
             if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
-                console.log('[dry-run] would upload ->', command.input.Key)
+                writeEvent({ event: 'dry-run', key: command.input.Key })
             } else {
                 await s3Client.send(command)
-                console.log('uploaded', filePath)
+                writeEvent({ event: 'uploaded', file: filePath })
             }
         }
     } catch (err) {
-        console.error('Error reading folder:', err.message)
+        writeEvent({ message: 'Error reading folder', error: err?.message ?? String(err) }, 'error')
     }
 
-    console.log('Done...')
+    writeEvent('Done...')
 }
 
 init()

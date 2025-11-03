@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { createProject } = require('../controllers/projectController');
+const { createProject, streamLogs, getArchivedLogs } = require('../controllers/projectController');
 
-// POST /project
 router.post('/', createProject);
+router.get('/:projectId/logs/stream', streamLogs);
+router.get('/:projectId/logs/archive', getArchivedLogs);
 
 module.exports = router;

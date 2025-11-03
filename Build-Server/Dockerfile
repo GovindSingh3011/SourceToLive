@@ -10,12 +10,12 @@ RUN apt-get install git -y
 
 WORKDIR /home/app
 
-COPY main.sh main.sh
-COPY script.js script.js
-COPY package*.json .
+COPY ./main.sh /home/app/main.sh
+COPY ./script.js /home/app/script.js
+COPY ./package*.json ./
 
 RUN npm install
 
-RUN chmod +x main.sh script.js
+RUN sed -i 's/\r$//' /home/app/main.sh && chmod +x /home/app/main.sh
 
 ENTRYPOINT [ "/home/app/main.sh" ]
