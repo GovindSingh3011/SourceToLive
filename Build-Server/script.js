@@ -122,7 +122,7 @@ async function init() {
             const contentType = mime.lookup(filePath) || 'application/octet-stream'
 
             const command = new PutObjectCommand({
-                Bucket: 'sourcetolive111',
+                Bucket: process.env.S3_BUCKET,
                 Key: `__outputs/${PROJECT_ID}/${relativePath}`,
                 Body: fs.createReadStream(filePath),
                 ContentType: contentType
