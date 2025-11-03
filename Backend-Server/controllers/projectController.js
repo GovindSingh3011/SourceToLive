@@ -86,6 +86,7 @@ async function createProject(req, res) {
           environment: [
             { name: 'PROJECT_ID', value: PROJECT_ID },
             { name: 'GIT_REPOSITORY__URL', value: GIT_REPOSITORY__URL },
+            { name: 'S3_BUCKET', value: config.S3_BUCKET },
           ],
         },
       ],
@@ -241,7 +242,7 @@ async function streamLogs(req, res) {
               if (currentStatus === 'STOPPED') {
                 try {
                   const resInfo = await flushAndArchiveLogs(logGroupName, logStreamName, projectId);
-                  } catch (archiveErr) {
+                } catch (archiveErr) {
                   writeEvent({ status: 'archive-error', message: archiveErr?.message ?? String(archiveErr) });
                 }
                 writeEvent({ status: 'finished' });
