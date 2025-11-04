@@ -13,6 +13,9 @@ app.use((req, res) => {
     const subdomain = hostname.split('.')[0];
 
     const resolvesTo = `${BASE_PATH}/${subdomain}`;
+    
+    console.log('Hostname:', hostname);
+    console.log('Subdomain:', subdomain);
     console.log('Proxying request to:', resolvesTo);
 
     return proxy.web(req, res, { target: resolvesTo, changeOrigin: true });
