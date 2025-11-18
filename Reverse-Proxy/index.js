@@ -11,7 +11,8 @@ const CLIENT_URL = process.env.CLIENT_URL || 'https://sourcetolive.dev'
 
 const proxy = httpProxy.createProxy()
 
-const custom404Page = fs.readFileSync(path.join(__dirname, '404.html'), 'utf8')
+const custom404Template = fs.readFileSync(path.join(__dirname, '404.html'), 'utf8')
+const custom404Page = custom404Template.replace(/{{CLIENT_URL}}/g, CLIENT_URL)
 
 app.use((req, res) => {
     const hostname = req.hostname;
