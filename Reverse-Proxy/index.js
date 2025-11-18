@@ -7,6 +7,7 @@ require('dotenv').config()
 const app = express()
 const PORT = process.env.PORT || 8000
 const BASE_PATH = process.env.BASE_PATH
+const CLIENT_URL = process.env.CLIENT_URL || 'https://sourcetolive.dev'
 
 const proxy = httpProxy.createProxy()
 
@@ -15,6 +16,12 @@ const custom404Page = fs.readFileSync(path.join(__dirname, '404.html'), 'utf8')
 app.use((req, res) => {
     const hostname = req.hostname;
     const subdomain = hostname.split('.')[0];
+
+    if (subdomain === 'www' || subdomain === hostname) {
+        console.log('Redirecting to main website from:', hostname);
+        return res.redirect(301, CLIENT_URL);
+    }
+
     const resolvesTo = `${BASE_PATH}/${subdomain}`;
 
     console.log('Hostname:', hostname);
