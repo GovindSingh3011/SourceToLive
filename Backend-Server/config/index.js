@@ -40,6 +40,7 @@ module.exports = {
   AWS_SECURITY_GROUPS: parseList('AWS_SECURITY_GROUPS'),
   APP_DOMAIN: process.env.APP_DOMAIN || 'localhost:8000',
   BASE_PATH: process.env.BASE_PATH || '',
+  S3_BUCKET: process.env.S3_BUCKET,
   
   // CloudWatch Configuration
   CLOUDWATCH_LOG_GROUP: process.env.CLOUDWATCH_LOG_GROUP || '/aws/sourcetolive/app',
