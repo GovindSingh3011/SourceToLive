@@ -2,6 +2,7 @@ const { ECSClient, RunTaskCommand, ListTasksCommand, DescribeTasksCommand, Descr
 const { CloudWatchLogsClient, GetLogEventsCommand, CreateLogGroupCommand, DeleteLogStreamCommand } = require('@aws-sdk/client-cloudwatch-logs');
 const { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } = require('@aws-sdk/client-s3');
 const config = require('../config');
+const Project = require('../models/Project');
 
 const ecsClient = new ECSClient({ region: config.AWS_REGION });
 const logsClient = new CloudWatchLogsClient({ region: config.AWS_REGION });
@@ -95,6 +96,19 @@ async function createProject(req, res) {
   };
 
   try {
+    // Persist or upsert the project record with initial details
+    const expectedDeployUrl = `https://${PROJECT_ID}.${config.APP_DOMAIN}`;
+    await Project.findOneAndUpdate(
+      { projectId: PROJECT_ID },
+      {
+        projectId: PROJECT_ID,
+        gitRepositoryUrl: GIT_REPOSITORY__URL,
+        deployUrl: expectedDeployUrl,
+        status: 'queued',
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true }
+    );
+
     try {
       const tdResp = await ecsClient.send(new DescribeTaskDefinitionCommand({ taskDefinition: config.TASK }));
       const td = tdResp.taskDefinition;
@@ -119,16 +133,31 @@ async function createProject(req, res) {
     const result = await ecsClient.send(command);
     const taskArn = result.tasks && result.tasks[0] && result.tasks[0].taskArn;
 
+    // Mark project as running if task started
+    if (taskArn) {
+      await Project.findOneAndUpdate(
+        { projectId: PROJECT_ID },
+        { status: 'running' }
+      );
+    }
+
     return res.json({
       data: {
         PROJECT_ID,
-        url: `http://${PROJECT_ID}.${config.APP_DOMAIN}`,
+        url: expectedDeployUrl,
         ecs: { result },
         taskArn,
       },
     });
   } catch (err) {
     console.error('Failed to run ECS task:', err);
+    // Mark project as failed in case of error
+    try {
+      await Project.findOneAndUpdate(
+        { projectId: PROJECT_ID },
+        { status: 'failed' }
+      );
+    } catch (_) { }
     return res.status(502).json({ status: 'error', message: 'Failed to queue ECS task', error: err?.message ?? String(err) });
   }
 }
@@ -242,7 +271,22 @@ async function streamLogs(req, res) {
               if (currentStatus === 'STOPPED') {
                 try {
                   const resInfo = await flushAndArchiveLogs(logGroupName, logStreamName, projectId);
+                  // Update project with final status and logs S3 key; deployUrl already set on create
+                  await Project.findOneAndUpdate(
+                    { projectId },
+                    {
+                      status: 'finished',
+                      logsS3Key: resInfo?.key || null,
+                    }
+                  );
                 } catch (archiveErr) {
+                  // Even if archiving fails, mark finished
+                  try {
+                    await Project.findOneAndUpdate(
+                      { projectId },
+                      { status: 'finished' }
+                    );
+                  } catch (_) { }
                   writeEvent({ status: 'archive-error', message: archiveErr?.message ?? String(archiveErr) });
                 }
                 writeEvent({ status: 'finished' });
@@ -298,7 +342,28 @@ async function streamLogs(req, res) {
   }
 }
 
-module.exports = { createProject, streamLogs };
+async function listProjects(req, res) {
+  try {
+    const items = await Project.find({}).sort({ createdAt: -1 }).lean();
+    return res.json({ items });
+  } catch (err) {
+    return res.status(500).json({ error: err?.message ?? String(err) });
+  }
+}
+
+async function getProject(req, res) {
+  const projectId = req.params.projectId;
+  if (!projectId) return res.status(400).json({ error: 'projectId param required' });
+  try {
+    const doc = await Project.findOne({ projectId }).lean();
+    if (!doc) return res.status(404).json({ error: 'not found' });
+    return res.json({ item: doc });
+  } catch (err) {
+    return res.status(500).json({ error: err?.message ?? String(err) });
+  }
+}
+
+module.exports = { createProject, streamLogs, listProjects, getProject };
 
 /**
  * GET /project/:projectId/logs/archive

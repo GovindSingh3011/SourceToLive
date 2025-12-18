@@ -112,7 +112,10 @@ function Home() {
       {/* Header with Auth */}
       <div className="header">
         <h1>Source to Live - Deployment</h1>
-        <div className="auth-section">
+        <div className="auth-section" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <button onClick={() => navigate('/projects')} className="login-btn"  rel="noopener noreferrer" target="_blank">
+            View Projects
+          </button>
           {user ? (
             <div className="user-info">
               <span className="welcome">Welcome, {user.username || user.email}!</span>
