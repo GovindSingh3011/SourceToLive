@@ -97,7 +97,7 @@ async function createProject(req, res) {
 
   try {
     // Persist or upsert the project record with initial details
-    const expectedDeployUrl = `http://${PROJECT_ID}.${config.APP_DOMAIN}`;
+    const expectedDeployUrl = `https://${PROJECT_ID}.${config.APP_DOMAIN}`;
     await Project.findOneAndUpdate(
       { projectId: PROJECT_ID },
       {
