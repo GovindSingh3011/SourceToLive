@@ -8,6 +8,8 @@ function Home() {
   const navigate = useNavigate()
   const [gitUrl, setGitUrl] = useState('')
   const [projectId, setProjectId] = useState('')
+  const [installCmd, setInstallCmd] = useState('npm install')
+  const [buildCmd, setBuildCmd] = useState('npm run build')
   const [logs, setLogs] = useState([])
   const [isDeploying, setIsDeploying] = useState(false)
   const [deploymentUrl, setDeploymentUrl] = useState('')
@@ -57,6 +59,8 @@ function Home() {
         body: JSON.stringify({
           GIT_REPOSITORY__URL: gitUrl,
           PROJECT_ID: projectId,
+          INSTALL_CMD: installCmd,
+          BUILD_CMD: buildCmd,
         }),
       })
 
@@ -152,6 +156,30 @@ function Home() {
             value={projectId}
             onChange={(e) => setProjectId(e.target.value)}
             placeholder="my-project-123"
+            disabled={isDeploying}
+          />
+        </div>
+
+        <div className="input-group">
+          <label htmlFor="installCmd">Install Command</label>
+          <input
+            id="installCmd"
+            type="text"
+            value={installCmd}
+            onChange={(e) => setInstallCmd(e.target.value)}
+            placeholder="npm install"
+            disabled={isDeploying}
+          />
+        </div>
+
+        <div className="input-group">
+          <label htmlFor="buildCmd">Build Command</label>
+          <input
+            id="buildCmd"
+            type="text"
+            value={buildCmd}
+            onChange={(e) => setBuildCmd(e.target.value)}
+            placeholder="npm run build"
             disabled={isDeploying}
           />
         </div>
