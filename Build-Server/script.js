@@ -80,34 +80,49 @@ async function init() {
 
     let distFolderPath = null
 
-    if (hasBuildScript(outDirPath)) {
-        writeEvent('Detected build script. Running npm install && npm run build in output folder...')
-        const p = exec(`cd ${outDirPath} && npm install && npm run build`)
+    try {
+        if (hasBuildScript(outDirPath)) {
+            writeEvent('Build script found. Starting build process.');
 
-        p.stdout.on('data', function (data) {
-            writeEvent({ stream: 'stdout', message: data.toString() })
-        })
-        p.stderr && p.stderr.on && p.stderr.on('data', function (data) {
-            writeEvent({ stream: 'stderr', message: data.toString() }, 'error')
-        })
+            const installCmd = process.env.INSTALL_CMD || 'npm install'
+            const buildCmd = process.env.BUILD_CMD || 'npm run build'
 
-        await new Promise((resolve, reject) => {
-            p.on('close', (code) => {
-                if (code === 0) return resolve()
-                return reject(new Error('Build process exited with code ' + code))
+            writeEvent(`Running: ${installCmd} && ${buildCmd}`)
+            const p = exec(`cd ${outDirPath} && ${installCmd} && ${buildCmd}`)
+
+            p.stdout.on('data', function (data) {
+                writeEvent({ stream: 'stdout', message: data.toString() })
             })
-        })
+            p.stderr && p.stderr.on && p.stderr.on('data', function (data) {
+                writeEvent({ stream: 'stderr', message: data.toString() }, 'error')
+            })
 
-        writeEvent('Build Complete')
-        distFolderPath = findBuildOutput(outDirPath) || path.join(outDirPath, 'dist')
-    } else {
-        writeEvent('No build script found — treating project as static (HTML/CSS/JS). Uploading output/ contents directly.')
-        distFolderPath = outDirPath
+            try {
+                await new Promise((resolve, reject) => {
+                    p.on('close', (code) => {
+                        if (code === 0) return resolve()
+                        return reject(new Error(`Build process failed with exit code ${code}`))
+                    })
+                })
+            } catch (buildErr) {
+                writeEvent({ message: 'Build failed', error: buildErr?.message ?? String(buildErr) }, 'error')
+                throw buildErr
+            }
+
+            writeEvent('Build Complete')
+            distFolderPath = findBuildOutput(outDirPath) || path.join(outDirPath, 'dist')
+        } else {
+            writeEvent('No build script found — treating project as static (HTML/CSS/JS). Uploading output/ contents directly.')
+            distFolderPath = outDirPath
+        }
+    } catch (err) {
+        writeEvent({ message: 'Fatal error during build', error: err?.message ?? String(err) }, 'error')
+        process.exit(1)
     }
 
     if (!fs.existsSync(distFolderPath) || !fs.lstatSync(distFolderPath).isDirectory()) {
         writeEvent({ message: 'Output folder not found', path: distFolderPath }, 'error')
-        return
+        process.exit(1)
     }
 
     try {
@@ -137,9 +152,14 @@ async function init() {
         }
     } catch (err) {
         writeEvent({ message: 'Error reading folder', error: err?.message ?? String(err) }, 'error')
+        process.exit(1)
     }
 
     writeEvent('Done...')
+    process.exit(0)
 }
 
-init()
+init().catch((err) => {
+    writeEvent({ message: 'Unhandled error', error: err?.message ?? String(err) }, 'error')
+    process.exit(1)
+})
