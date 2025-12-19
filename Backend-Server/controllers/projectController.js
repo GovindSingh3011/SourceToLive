@@ -271,17 +271,15 @@ async function streamLogs(req, res) {
               const currentTask = desc.tasks && desc.tasks[0];
               const currentStatus = currentTask && currentTask.lastStatus;
               if (currentStatus === 'STOPPED') {
-                // Check if task stopped due to error
+                // Determine success/failure based on exit codes and stop reason
                 const stopCode = currentTask.stopCode;
-                const containers = currentTask.containers || [];
-                const hasFailedContainer = containers.some(c => c.exitCode && c.exitCode !== 0);
                 const stopReason = currentTask.stoppedReason || '';
-
-                // Determine if this was a failure
-                const isFailed = hasFailedContainer ||
-                  stopCode === 'TaskFailedToStart' ||
-                  stopCode === 'EssentialContainerExited' ||
-                  /error|failed/i.test(stopReason);
+                const containers = Array.isArray(currentTask.containers) ? currentTask.containers : [];
+                const hasFailedContainer = containers.some(c => typeof c.exitCode === 'number' && c.exitCode !== 0);
+                // Treat TaskFailedToStart as failure; EssentialContainerExited is normal when the task ends
+                const stopCodeFailed = stopCode === 'TaskFailedToStart';
+                const stopReasonFailed = /cannot|error|failed|oomkilled|out\s*of\s*memory/i.test(stopReason);
+                const isFailed = hasFailedContainer || stopCodeFailed || stopReasonFailed;
 
                 try {
                   const resInfo = await flushAndArchiveLogs(logGroupName, logStreamName, projectId);
