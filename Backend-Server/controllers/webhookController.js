@@ -6,6 +6,104 @@ const Project = require('../models/Project');
 const ecsClient = new ECSClient({ region: config.AWS_REGION });
 
 /**
+ * Extract owner and repo from git URL
+ */
+function parseGitUrl(gitUrl) {
+    // Support formats:
+    // https://github.com/owner/repo.git
+    // https://github.com/owner/repo
+    // git@github.com:owner/repo.git
+    // https://gitlab.com/owner/repo.git
+    const patterns = [
+        /github\.com[\/:]([^\/]+)\/([^\/\.]+)(\.git)?$/,
+        /gitlab\.com[\/:]([^\/]+)\/([^\/\.]+)(\.git)?$/,
+    ];
+
+    for (const pattern of patterns) {
+        const match = gitUrl.match(pattern);
+        if (match) {
+            return {
+                owner: match[1],
+                repo: match[2],
+                platform: gitUrl.includes('gitlab') ? 'gitlab' : 'github'
+            };
+        }
+    }
+
+    return null;
+}
+
+/**
+ * Create GitHub webhook automatically
+ */
+async function createGitHubWebhook(owner, repo, webhookUrl, secret, accessToken) {
+    try {
+        const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/hooks`, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/vnd.github.v3+json',
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                config: {
+                    url: webhookUrl,
+                    content_type: 'json',
+                    secret: secret,
+                    insecure_ssl: '0'
+                },
+                events: ['push'],
+                active: true
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to create webhook');
+        }
+
+        const webhook = await response.json();
+        return { success: true, webhookId: webhook.id.toString() };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+/**
+ * Create GitLab webhook automatically
+ */
+async function createGitLabWebhook(owner, repo, webhookUrl, token, accessToken) {
+    try {
+        // URL encode the project path
+        const projectPath = encodeURIComponent(`${owner}/${repo}`);
+
+        const response = await fetch(`https://gitlab.com/api/v4/projects/${projectPath}/hooks`, {
+            method: 'POST',
+            headers: {
+                'PRIVATE-TOKEN': accessToken,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                url: webhookUrl,
+                token: token,
+                push_events: true,
+                enable_ssl_verification: true
+            })
+        });
+
+        if (!response.ok) {
+            const error = await response.json();
+            throw new Error(error.message || 'Failed to create webhook');
+        }
+
+        const webhook = await response.json();
+        return { success: true, webhookId: webhook.id.toString() };
+    } catch (error) {
+        return { success: false, error: error.message };
+    }
+}
+
+/**
  * Verify GitHub webhook signature
  */
 function verifyGitHubSignature(payload, signature, secret) {
@@ -215,9 +313,11 @@ async function handleGitLabWebhook(req, res) {
 /**
  * Enable auto-redeploy for a project
  * POST /api/webhook/enable/:projectId
+ * Body (optional): { accessToken: 'github_pat_xxx' or 'glpat-xxx' }
  */
 async function enableAutoRedeploy(req, res) {
     const { projectId } = req.params;
+    const { accessToken } = req.body || {};
 
     try {
         const project = await Project.findOne({ projectId });
@@ -231,31 +331,86 @@ async function enableAutoRedeploy(req, res) {
             webhookSecret = crypto.randomBytes(32).toString('hex');
         }
 
+        // Parse git repository URL
+        const gitInfo = parseGitUrl(project.gitRepositoryUrl);
+
+        // Webhook URLs
+        const webhookUrls = {
+            github: `${config.API_URL}/api/webhook/github/${projectId}`,
+            gitlab: `${config.API_URL}/api/webhook/gitlab/${projectId}`,
+        };
+
+        let webhookResult = null;
+        let webhookId = project.webhookId;
+
+        // Automatically create webhook if access token provided and git URL is parsable
+        if (accessToken && gitInfo) {
+            const webhookUrl = gitInfo.platform === 'github' ? webhookUrls.github : webhookUrls.gitlab;
+
+            if (gitInfo.platform === 'github') {
+                webhookResult = await createGitHubWebhook(
+                    gitInfo.owner,
+                    gitInfo.repo,
+                    webhookUrl,
+                    webhookSecret,
+                    accessToken
+                );
+            } else if (gitInfo.platform === 'gitlab') {
+                webhookResult = await createGitLabWebhook(
+                    gitInfo.owner,
+                    gitInfo.repo,
+                    webhookUrl,
+                    webhookSecret,
+                    accessToken
+                );
+            }
+
+            if (webhookResult?.success) {
+                webhookId = webhookResult.webhookId;
+            }
+        }
+
         // Update project
         await Project.findOneAndUpdate(
             { projectId },
             {
                 autoRedeploy: true,
                 webhookSecret,
+                ...(webhookId ? { webhookId } : {}),
             }
         );
 
-        // Return webhook URLs
-        const webhookUrls = {
-            github: `${config.API_URL || 'http://localhost:3000'}/api/webhook/github/${projectId}`,
-            gitlab: `${config.API_URL || 'http://localhost:3000'}/api/webhook/gitlab/${projectId}`,
-        };
-
-        return res.json({
-            message: 'Auto-redeploy enabled successfully',
+        // Build response
+        const response = {
+            message: webhookResult?.success
+                ? 'Auto-redeploy enabled and webhook created automatically'
+                : 'Auto-redeploy enabled successfully',
             projectId,
             webhookSecret,
             webhookUrls,
-            instructions: {
-                github: 'Add webhook in repository Settings > Webhooks. Use the GitHub URL, set Content-Type to application/json, and paste the webhook secret.',
-                gitlab: 'Add webhook in repository Settings > Webhooks. Use the GitLab URL, paste the secret token, and select Push events.',
-            }
-        });
+            automaticSetup: !!webhookResult?.success,
+        };
+
+        if (webhookResult?.success) {
+            response.webhookId = webhookId;
+            response.platform = gitInfo.platform;
+        } else if (webhookResult?.error) {
+            response.webhookError = webhookResult.error;
+            response.instructions = {
+                github: 'Add webhook manually in repository Settings > Webhooks. Use the GitHub URL, set Content-Type to application/json, and paste the webhook secret.',
+                gitlab: 'Add webhook manually in repository Settings > Webhooks. Use the GitLab URL, paste the secret token, and select Push events.',
+            };
+        } else if (!accessToken) {
+            response.instructions = {
+                automatic: `To create webhook automatically, send a POST request with { "accessToken": "your_token" } in the body. Use a GitHub Personal Access Token (with repo scope) or GitLab Access Token (with api scope).`,
+                manual: {
+                    github: 'Add webhook in repository Settings > Webhooks. Use the GitHub URL, set Content-Type to application/json, and paste the webhook secret.',
+                    gitlab: 'Add webhook in repository Settings > Webhooks. Use the GitLab URL, paste the secret token, and select Push events.',
+                }
+            };
+        }
+
+        return res.json(response);
 
     } catch (error) {
         console.error('Enable auto-redeploy error:', error);
