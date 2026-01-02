@@ -58,7 +58,7 @@ async function flushAndArchiveLogs(logGroupName, logStreamName, projectId) {
  * Queues an ECS RunTask and forwards PROJECT_ID and GIT_REPOSITORY__URL to the container.
  */
 async function createProject(req, res) {
-  const { GIT_REPOSITORY__URL, PROJECT_ID } = req.body || {};
+  const { GIT_REPOSITORY__URL, PROJECT_ID, INSTALL_CMD, BUILD_CMD, BUILD_ROOT } = req.body || {};
 
   if (!GIT_REPOSITORY__URL || typeof GIT_REPOSITORY__URL !== 'string') {
     return res.status(400).json({ error: 'GIT_REPOSITORY__URL is required and must be a string' });
@@ -88,6 +88,9 @@ async function createProject(req, res) {
             { name: 'PROJECT_ID', value: PROJECT_ID },
             { name: 'GIT_REPOSITORY__URL', value: GIT_REPOSITORY__URL },
             { name: 'S3_BUCKET', value: config.S3_BUCKET },
+            { name: 'INSTALL_CMD', value: INSTALL_CMD || 'npm install' },
+            { name: 'BUILD_CMD', value: BUILD_CMD || 'npm run build' },
+            ...(BUILD_ROOT && BUILD_ROOT.trim() ? [{ name: 'BUILD_ROOT', value: BUILD_ROOT.trim() }] : []),
           ],
         },
       ],
@@ -269,27 +272,36 @@ async function streamLogs(req, res) {
               const currentTask = desc.tasks && desc.tasks[0];
               const currentStatus = currentTask && currentTask.lastStatus;
               if (currentStatus === 'STOPPED') {
+                // Determine success/failure based on exit codes and stop reason
+                const stopCode = currentTask.stopCode;
+                const stopReason = currentTask.stoppedReason || '';
+                const containers = Array.isArray(currentTask.containers) ? currentTask.containers : [];
+                const hasFailedContainer = containers.some(c => typeof c.exitCode === 'number' && c.exitCode !== 0);
+                // Treat TaskFailedToStart as failure; EssentialContainerExited is normal when the task ends
+                const stopCodeFailed = stopCode === 'TaskFailedToStart';
+                const stopReasonFailed = /cannot|error|failed|oomkilled|out\s*of\s*memory/i.test(stopReason);
+                const isFailed = hasFailedContainer || stopCodeFailed || stopReasonFailed;
+
                 try {
                   const resInfo = await flushAndArchiveLogs(logGroupName, logStreamName, projectId);
-                  // Update project with final status and logs S3 key; deployUrl already set on create
                   await Project.findOneAndUpdate(
                     { projectId },
                     {
-                      status: 'finished',
+                      status: isFailed ? 'failed' : 'finished',
                       logsS3Key: resInfo?.key || null,
                     }
                   );
                 } catch (archiveErr) {
-                  // Even if archiving fails, mark finished
+                  // Even if archiving fails, mark with appropriate status
                   try {
                     await Project.findOneAndUpdate(
                       { projectId },
-                      { status: 'finished' }
+                      { status: isFailed ? 'failed' : 'finished' }
                     );
                   } catch (_) { }
                   writeEvent({ status: 'archive-error', message: archiveErr?.message ?? String(archiveErr) });
                 }
-                writeEvent({ status: 'finished' });
+                writeEvent({ status: isFailed ? 'failed' : 'finished' });
                 clearInterval(intervalId);
                 return res.end();
               }

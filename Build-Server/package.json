@@ -9,11 +9,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "child_process": "^1.0.2",
-    "client-s3": "github:aws-sdk/client-s3",
+    "@aws-sdk/client-s3": "^3.955.0",
     "dotenv": "^17.2.3",
-    "fs": "^0.0.1-security",
-    "mime-types": "^3.0.1",
-    "path": "^0.12.7"
+    "mime-types": "^3.0.1"
   }
 }

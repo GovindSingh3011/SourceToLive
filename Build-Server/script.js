@@ -69,6 +69,20 @@ function walkDir(dir) {
     return files
 }
 
+async function findProjectRoot(startDir) {
+    const buildRoot = process.env.BUILD_ROOT
+    if (buildRoot) {
+        const customPath = path.join(startDir, buildRoot)
+        if (fs.existsSync(customPath) && fs.lstatSync(customPath).isDirectory()) {
+            writeEvent(`Using custom BUILD_ROOT: ${buildRoot}`)
+            return customPath
+        }
+        writeEvent(`Warning: Custom BUILD_ROOT path not found: ${buildRoot}. Falling back to root directory.`, 'warn')
+    }
+
+    return startDir
+}
+
 async function init() {
     writeEvent('Executing script.js')
 
@@ -77,37 +91,53 @@ async function init() {
     }
 
     const outDirPath = path.join(__dirname, 'output')
+    const projectRoot = await findProjectRoot(outDirPath)
 
     let distFolderPath = null
 
-    if (hasBuildScript(outDirPath)) {
-        writeEvent('Detected build script. Running npm install && npm run build in output folder...')
-        const p = exec(`cd ${outDirPath} && npm install && npm run build`)
+    try {
+        if (hasBuildScript(projectRoot)) {
+            writeEvent('Build script found. Starting build process.');
 
-        p.stdout.on('data', function (data) {
-            writeEvent({ stream: 'stdout', message: data.toString() })
-        })
-        p.stderr && p.stderr.on && p.stderr.on('data', function (data) {
-            writeEvent({ stream: 'stderr', message: data.toString() }, 'error')
-        })
+            const installCmd = process.env.INSTALL_CMD || 'npm install'
+            const buildCmd = process.env.BUILD_CMD || 'npm run build'
 
-        await new Promise((resolve, reject) => {
-            p.on('close', (code) => {
-                if (code === 0) return resolve()
-                return reject(new Error('Build process exited with code ' + code))
+            writeEvent(`Running: ${installCmd} && ${buildCmd}`)
+            const p = exec(`cd ${projectRoot} && ${installCmd} && ${buildCmd}`)
+
+            p.stdout.on('data', function (data) {
+                writeEvent({ stream: 'stdout', message: data.toString() })
             })
-        })
+            p.stderr && p.stderr.on && p.stderr.on('data', function (data) {
+                writeEvent({ stream: 'stderr', message: data.toString() }, 'error')
+            })
 
-        writeEvent('Build Complete')
-        distFolderPath = findBuildOutput(outDirPath) || path.join(outDirPath, 'dist')
-    } else {
-        writeEvent('No build script found — treating project as static (HTML/CSS/JS). Uploading output/ contents directly.')
-        distFolderPath = outDirPath
+            try {
+                await new Promise((resolve, reject) => {
+                    p.on('close', (code) => {
+                        if (code === 0) return resolve()
+                        return reject(new Error(`Build process failed with exit code ${code}`))
+                    })
+                })
+            } catch (buildErr) {
+                writeEvent({ message: 'Build failed', error: buildErr?.message ?? String(buildErr) }, 'error')
+                throw buildErr
+            }
+
+            writeEvent('Build Complete')
+            distFolderPath = findBuildOutput(projectRoot) || path.join(projectRoot, 'dist')
+        } else {
+            writeEvent('No build script found — treating project as static (HTML/CSS/JS). Uploading output/ contents directly.')
+            distFolderPath = projectRoot
+        }
+    } catch (err) {
+        writeEvent({ message: 'Fatal error during build', error: err?.message ?? String(err) }, 'error')
+        process.exit(1)
     }
 
     if (!fs.existsSync(distFolderPath) || !fs.lstatSync(distFolderPath).isDirectory()) {
         writeEvent({ message: 'Output folder not found', path: distFolderPath }, 'error')
-        return
+        process.exit(1)
     }
 
     try {
@@ -137,9 +167,14 @@ async function init() {
         }
     } catch (err) {
         writeEvent({ message: 'Error reading folder', error: err?.message ?? String(err) }, 'error')
+        process.exit(1)
     }
 
     writeEvent('Done...')
+    process.exit(0)
 }
 
-init()
+init().catch((err) => {
+    writeEvent({ message: 'Unhandled error', error: err?.message ?? String(err) }, 'error')
+    process.exit(1)
+})

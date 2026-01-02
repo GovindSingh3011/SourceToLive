@@ -22,7 +22,7 @@ function Project() {
                 if (!res.ok) throw new Error(data.error || 'Failed to fetch project')
                 setItem(data.item)
                 // Decide default view based on status
-                if (data.item && data.item.status === 'finished') {
+                if (data.item && (data.item.status === 'finished' || data.item.status === 'failed')) {
                     setView('archive')
                 } else {
                     setView('live')
@@ -46,7 +46,7 @@ function Project() {
                 if (!res.ok || !active) return
                 if (data.item) {
                     setItem(data.item)
-                    const nextView = data.item.status === 'finished' ? 'archive' : 'live'
+                    const nextView = (data.item.status === 'finished' || data.item.status === 'failed') ? 'archive' : 'live'
                     setView(nextView)
                 }
             } catch (_) { /* ignore */ }
@@ -68,6 +68,12 @@ function Project() {
                     es.close()
                     setIsStreaming(false)
                     // Switch to archived logs when finished
+                    setView('archive')
+                } else if (data.status === 'failed') {
+                    setLogs(prev => [{ ts, message: '✗ Failed' }, ...prev])
+                    es.close()
+                    setIsStreaming(false)
+                    // Switch to archived logs when failed
                     setView('archive')
                 } else if (data.status === 'error') {
                     setLogs(prev => [{ ts, message: `✗ Error: ${data.message}` }, ...prev])

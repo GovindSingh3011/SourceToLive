@@ -8,6 +8,9 @@ function Home() {
   const navigate = useNavigate()
   const [gitUrl, setGitUrl] = useState('')
   const [projectId, setProjectId] = useState('')
+  const [installCmd, setInstallCmd] = useState('npm install')
+  const [buildCmd, setBuildCmd] = useState('npm run build')
+  const [buildRoot, setBuildRoot] = useState('')
   const [logs, setLogs] = useState([])
   const [isDeploying, setIsDeploying] = useState(false)
   const [deploymentUrl, setDeploymentUrl] = useState('')
@@ -57,6 +60,9 @@ function Home() {
         body: JSON.stringify({
           GIT_REPOSITORY__URL: gitUrl,
           PROJECT_ID: projectId,
+          INSTALL_CMD: installCmd,
+          BUILD_CMD: buildCmd,
+          BUILD_ROOT: buildRoot,
         }),
       })
 
@@ -113,7 +119,7 @@ function Home() {
       <div className="header">
         <h1>Source to Live - Deployment</h1>
         <div className="auth-section" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-          <button onClick={() => navigate('/projects')} className="login-btn"  rel="noopener noreferrer" target="_blank">
+          <button onClick={() => navigate('/projects')} className="login-btn" rel="noopener noreferrer" target="_blank">
             View Projects
           </button>
           {user ? (
@@ -152,6 +158,42 @@ function Home() {
             value={projectId}
             onChange={(e) => setProjectId(e.target.value)}
             placeholder="my-project-123"
+            disabled={isDeploying}
+          />
+        </div>
+
+        <div className="input-group">
+          <label htmlFor="installCmd">Install Command</label>
+          <input
+            id="installCmd"
+            type="text"
+            value={installCmd}
+            onChange={(e) => setInstallCmd(e.target.value)}
+            placeholder="npm install"
+            disabled={isDeploying}
+          />
+        </div>
+
+        <div className="input-group">
+          <label htmlFor="buildCmd">Build Command</label>
+          <input
+            id="buildCmd"
+            type="text"
+            value={buildCmd}
+            onChange={(e) => setBuildCmd(e.target.value)}
+            placeholder="npm run build"
+            disabled={isDeploying}
+          />
+        </div>
+
+        <div className="input-group">
+          <label htmlFor="buildRoot">Build Root (Optional)</label>
+          <input
+            id="buildRoot"
+            type="text"
+            value={buildRoot}
+            onChange={(e) => setBuildRoot(e.target.value)}
+            placeholder="e.g., client/ or packages/web"
             disabled={isDeploying}
           />
         </div>
