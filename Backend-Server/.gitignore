@@ -67,3 +67,5 @@ venv/
 *.tmp
 *.temp
 *.log
+
+tunnel-url.txt
