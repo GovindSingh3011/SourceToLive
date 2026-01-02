@@ -58,7 +58,7 @@ async function flushAndArchiveLogs(logGroupName, logStreamName, projectId) {
  * Queues an ECS RunTask and forwards PROJECT_ID and GIT_REPOSITORY__URL to the container.
  */
 async function createProject(req, res) {
-  const { GIT_REPOSITORY__URL, PROJECT_ID, INSTALL_CMD, BUILD_CMD } = req.body || {};
+  const { GIT_REPOSITORY__URL, PROJECT_ID, INSTALL_CMD, BUILD_CMD, BUILD_ROOT } = req.body || {};
 
   if (!GIT_REPOSITORY__URL || typeof GIT_REPOSITORY__URL !== 'string') {
     return res.status(400).json({ error: 'GIT_REPOSITORY__URL is required and must be a string' });
@@ -90,6 +90,7 @@ async function createProject(req, res) {
             { name: 'S3_BUCKET', value: config.S3_BUCKET },
             { name: 'INSTALL_CMD', value: INSTALL_CMD || 'npm install' },
             { name: 'BUILD_CMD', value: BUILD_CMD || 'npm run build' },
+            ...(BUILD_ROOT && BUILD_ROOT.trim() ? [{ name: 'BUILD_ROOT', value: BUILD_ROOT.trim() }] : []),
           ],
         },
       ],
