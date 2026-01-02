@@ -69,6 +69,20 @@ function walkDir(dir) {
     return files
 }
 
+async function findProjectRoot(startDir) {
+    const buildRoot = process.env.BUILD_ROOT
+    if (buildRoot) {
+        const customPath = path.join(startDir, buildRoot)
+        if (fs.existsSync(customPath) && fs.lstatSync(customPath).isDirectory()) {
+            writeEvent(`Using custom BUILD_ROOT: ${buildRoot}`)
+            return customPath
+        }
+        writeEvent(`Warning: Custom BUILD_ROOT path not found: ${buildRoot}. Falling back to root directory.`, 'warn')
+    }
+
+    return startDir
+}
+
 async function init() {
     writeEvent('Executing script.js')
 
@@ -77,18 +91,19 @@ async function init() {
     }
 
     const outDirPath = path.join(__dirname, 'output')
+    const projectRoot = await findProjectRoot(outDirPath)
 
     let distFolderPath = null
 
     try {
-        if (hasBuildScript(outDirPath)) {
+        if (hasBuildScript(projectRoot)) {
             writeEvent('Build script found. Starting build process.');
 
             const installCmd = process.env.INSTALL_CMD || 'npm install'
             const buildCmd = process.env.BUILD_CMD || 'npm run build'
 
             writeEvent(`Running: ${installCmd} && ${buildCmd}`)
-            const p = exec(`cd ${outDirPath} && ${installCmd} && ${buildCmd}`)
+            const p = exec(`cd ${projectRoot} && ${installCmd} && ${buildCmd}`)
 
             p.stdout.on('data', function (data) {
                 writeEvent({ stream: 'stdout', message: data.toString() })
@@ -110,10 +125,10 @@ async function init() {
             }
 
             writeEvent('Build Complete')
-            distFolderPath = findBuildOutput(outDirPath) || path.join(outDirPath, 'dist')
+            distFolderPath = findBuildOutput(projectRoot) || path.join(projectRoot, 'dist')
         } else {
             writeEvent('No build script found — treating project as static (HTML/CSS/JS). Uploading output/ contents directly.')
-            distFolderPath = outDirPath
+            distFolderPath = projectRoot
         }
     } catch (err) {
         writeEvent({ message: 'Fatal error during build', error: err?.message ?? String(err) }, 'error')
