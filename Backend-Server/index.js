@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const config = require('./config');
 const projectRouter = require('./routes/project');
 const authRoutes = require('./routes/authRoutes');
+const webhookRoutes = require('./routes/webhookRoutes');
 
 const app = express();
 
@@ -31,6 +32,7 @@ app.use(morgan('dev'));
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/project', projectRouter);
+app.use('/api/webhook', webhookRoutes);
 
 // Generic error handler
 app.use((err, req, res, next) => {

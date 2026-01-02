@@ -108,6 +108,11 @@ async function createProject(req, res) {
         gitRepositoryUrl: GIT_REPOSITORY__URL,
         deployUrl: expectedDeployUrl,
         status: 'queued',
+        buildConfig: {
+          installCmd: INSTALL_CMD || 'npm install',
+          buildCmd: BUILD_CMD || 'npm run build',
+          buildRoot: BUILD_ROOT && BUILD_ROOT.trim() ? BUILD_ROOT.trim() : null,
+        },
       },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
