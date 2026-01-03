@@ -27,6 +27,14 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+app.use((err, req, res, next) => {
+  if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+    return next();
+  }
+  next(err);
+});
+
 app.use(morgan('dev'));
 
 // API Routes
@@ -36,6 +44,10 @@ app.use('/api/webhook', webhookRoutes);
 
 // Generic error handler
 app.use((err, req, res, next) => {
+  // Ignore JSON parse errors from empty bodies
+  if (err instanceof SyntaxError && err.status === 400) {
+    return res.status(400).json({ error: 'Invalid JSON' });
+  }
   console.error('Unhandled error:', err);
   res.status(500).json({ error: 'Internal Server Error' });
 });
