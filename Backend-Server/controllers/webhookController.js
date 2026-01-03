@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const { ECSClient, RunTaskCommand } = require('@aws-sdk/client-ecs');
 const config = require('../config');
 const Project = require('../models/Project');
+const User = require('../models/User');
 
 const ecsClient = new ECSClient({ region: config.AWS_REGION });
 
@@ -313,16 +314,25 @@ async function handleGitLabWebhook(req, res) {
 /**
  * Enable auto-redeploy for a project
  * POST /api/webhook/enable/:projectId
- * Body (optional): { accessToken: 'github_pat_xxx' or 'glpat-xxx' }
+ * Automatically uses the user's stored GitHub token
  */
 async function enableAutoRedeploy(req, res) {
     const { projectId } = req.params;
-    const { accessToken } = req.body || {};
+    const userId = req.user?.userId; // From verifyToken middleware
 
     try {
         const project = await Project.findOne({ projectId });
         if (!project) {
             return res.status(404).json({ error: 'Project not found' });
+        }
+
+        // Get user's stored GitHub token
+        let accessToken = null;
+        if (userId) {
+            const user = await User.findOne({ userId });
+            if (user && user.githubAccessToken) {
+                accessToken = user.githubAccessToken;
+            }
         }
 
         // Generate webhook secret if not exists
@@ -343,7 +353,7 @@ async function enableAutoRedeploy(req, res) {
         let webhookResult = null;
         let webhookId = project.webhookId;
 
-        // Automatically create webhook if access token provided and git URL is parsable
+        // Automatically create webhook if access token available and git URL is parsable
         if (accessToken && gitInfo) {
             const webhookUrl = gitInfo.platform === 'github' ? webhookUrls.github : webhookUrls.gitlab;
 
@@ -402,10 +412,12 @@ async function enableAutoRedeploy(req, res) {
             };
         } else if (!accessToken) {
             response.instructions = {
-                automatic: `To create webhook automatically, send a POST request with { "accessToken": "your_token" } in the body. Use a GitHub Personal Access Token (with repo scope) or GitLab Access Token (with api scope).`,
+                message: 'No GitHub token configured. Please add your GitHub Personal Access Token in your profile settings to enable automatic webhook creation.',
+                tokenRequired: 'GitHub Personal Access Token with "repo" scope (for all repositories) OR "public_repo" + "admin:repo_hook" (for public repositories only)',
+                tokenUrl: 'https://github.com/settings/tokens/new',
                 manual: {
-                    github: 'Add webhook in repository Settings > Webhooks. Use the GitHub URL, set Content-Type to application/json, and paste the webhook secret.',
-                    gitlab: 'Add webhook in repository Settings > Webhooks. Use the GitLab URL, paste the secret token, and select Push events.',
+                    github: 'Add webhook manually in repository Settings > Webhooks. Use the GitHub URL, set Content-Type to application/json, and paste the webhook secret.',
+                    gitlab: 'Add webhook manually in repository Settings > Webhooks. Use the GitLab URL, paste the secret token, and select Push events.',
                 }
             };
         }
@@ -427,28 +439,149 @@ async function enableAutoRedeploy(req, res) {
  */
 async function disableAutoRedeploy(req, res) {
     const { projectId } = req.params;
+    const userId = req.user?.userId;
 
     try {
+        console.log('🔍 Disable webhook request:', { projectId, userId });
+
+        if (!userId) {
+            return res.status(401).json({
+                error: 'Authentication failed',
+                message: 'User ID not found in token'
+            });
+        }
+
         const project = await Project.findOne({ projectId });
         if (!project) {
             return res.status(404).json({ error: 'Project not found' });
         }
 
-        // Update project
+        // Get user's GitHub token
+        const user = await User.findOne({ userId });
+        if (!user) {
+            return res.status(404).json({
+                error: 'User not found',
+            });
+        }
+
+        if (!user.githubAccessToken) {
+            console.log('⚠️ No GitHub token for user:', userId);
+            // If no token, just disable and clear webhook data without deleting from GitHub
+            await Project.findOneAndUpdate(
+                { projectId },
+                {
+                    autoRedeploy: false,
+                    webhookId: null,
+                    webhookSecret: null,
+                    webhookUrl: null,
+                }
+            );
+
+            return res.json({
+                message: 'Auto-redeploy disabled successfully',
+                projectId,
+                webhook: {
+                    deleted: false,
+                    note: 'GitHub token not available. Webhook data cleared from database but not deleted from GitHub.'
+                }
+            });
+        }
+
+        // Parse git URL to get owner and repo
+        const gitInfo = parseGitUrl(project.gitRepositoryUrl);
+        if (!gitInfo) {
+            return res.status(400).json({ error: 'Invalid git URL' });
+        }
+
+        console.log('🔍 Git info parsed:', gitInfo);
+
+        // Delete webhook from GitHub/GitLab based on platform
+        let deleteSuccess = false;
+        let deleteError = null;
+
+        if (gitInfo.platform === 'github' && project.webhookId) {
+            try {
+                console.log(`🗑️ Deleting GitHub webhook ${project.webhookId} from ${gitInfo.owner}/${gitInfo.repo}`);
+
+                const deleteResponse = await fetch(
+                    `https://api.github.com/repos/${gitInfo.owner}/${gitInfo.repo}/hooks/${project.webhookId}`,
+                    {
+                        method: 'DELETE',
+                        headers: {
+                            'Accept': 'application/vnd.github.v3+json',
+                            'Authorization': `Bearer ${user.githubAccessToken}`,
+                        }
+                    }
+                );
+
+                if (deleteResponse.ok || deleteResponse.status === 404) {
+                    // 204 No Content = success, 404 = already deleted
+                    console.log(`✅ GitHub webhook deleted successfully`);
+                    deleteSuccess = true;
+                } else {
+                    const errorBody = await deleteResponse.json().catch(() => null);
+                    console.error(`❌ Failed to delete GitHub webhook: ${deleteResponse.status}`, errorBody);
+                    deleteError = errorBody?.message || `HTTP ${deleteResponse.status}`;
+                }
+            } catch (error) {
+                console.error('❌ Error deleting GitHub webhook:', error.message);
+                deleteError = error.message;
+            }
+        } else if (gitInfo.platform === 'gitlab' && project.webhookId) {
+            try {
+                const projectPath = encodeURIComponent(`${gitInfo.owner}/${gitInfo.repo}`);
+                console.log(`🗑️ Deleting GitLab webhook ${project.webhookId} from ${projectPath}`);
+
+                const deleteResponse = await fetch(
+                    `https://gitlab.com/api/v4/projects/${projectPath}/hooks/${project.webhookId}`,
+                    {
+                        method: 'DELETE',
+                        headers: {
+                            'PRIVATE-TOKEN': user.githubAccessToken,
+                        }
+                    }
+                );
+
+                if (deleteResponse.ok || deleteResponse.status === 404) {
+                    // 204 No Content = success, 404 = already deleted
+                    console.log(`✅ GitLab webhook deleted successfully`);
+                    deleteSuccess = true;
+                } else {
+                    const errorBody = await deleteResponse.json().catch(() => null);
+                    console.error(`❌ Failed to delete GitLab webhook: ${deleteResponse.status}`, errorBody);
+                    deleteError = errorBody?.message || `HTTP ${deleteResponse.status}`;
+                }
+            } catch (error) {
+                console.error('❌ Error deleting GitLab webhook:', error.message);
+                deleteError = error.message;
+            }
+        } else if (!project.webhookId) {
+            console.log('⚠️ No webhookId to delete');
+        }
+
+        // Update project - remove webhook data and disable auto-redeploy
         await Project.findOneAndUpdate(
             { projectId },
             {
                 autoRedeploy: false,
+                webhookId: null,
+                webhookSecret: null,
+                webhookUrl: null,
             }
         );
 
         return res.json({
             message: 'Auto-redeploy disabled successfully',
             projectId,
+            webhook: {
+                deleted: deleteSuccess,
+                deletedFrom: gitInfo.platform,
+                error: deleteError
+            }
         });
 
     } catch (error) {
-        console.error('Disable auto-redeploy error:', error);
+        console.error('❌ Disable auto-redeploy error:', error);
         return res.status(500).json({
             error: 'Failed to disable auto-redeploy',
             message: error?.message ?? String(error)
