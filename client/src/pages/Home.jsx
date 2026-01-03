@@ -123,8 +123,11 @@ function Home() {
             View Projects
           </button>
           {user ? (
-            <div className="user-info">
+            <div className="user-info" style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
               <span className="welcome">Welcome, {user.username || user.email}!</span>
+              <button onClick={() => navigate('/settings')} className="login-btn">
+                Settings
+              </button>
               <button onClick={handleLogout} className="logout-btn">
                 Logout
               </button>
