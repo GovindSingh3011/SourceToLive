@@ -59,7 +59,12 @@ const userSchema = new mongoose.Schema({
     address: {
         type: String,
         trim: true
+    },
+    githubAccessToken: {
+        type: String,
+        default: null,
+        trim: true
     }
-}, {timestamps: true});
+}, { timestamps: true });
 
 module.exports = mongoose.model("User", userSchema);
