@@ -1,99 +1,140 @@
-﻿# Cloudflare Tunnel — Setup & Usage
+﻿# 🚇 Cloudflare Tunnel Setup Guide
 
-This document explains how to run the shared Cloudflare Tunnel for a stable backend URL used by the team. It focuses on secure, repeatable steps for local usage and common troubleshooting.
-
-TL;DR
-
-- Persistent URL: https://app.sourcetolive.dev
-- Tunnel name: sourcetolive-backend
-- Local service: http://localhost:3000
+> **Quick access to your local backend through a persistent URL**
 
 ---
 
-## Snapshot
+## 📋 Table of Contents
 
-| Item           | Value                                  |
-| -------------- | -------------------------------------- |
-| Persistent URL | `https://app.sourcetolive.dev`         |
-| Tunnel name    | `sourcetolive-backend`                 |
-| Tunnel ID      | `5fe1fab9-cbdd-459c-9c8f-d918343b0b2a` |
-| Local server   | `http://localhost:3000`                |
+- [Overview](#-overview)
+- [Quick Reference](#-quick-reference)
+- [First-Time Setup](#-first-time-setup)
+- [Daily Usage](#-daily-usage)
+- [Configuration Details](#%EF%B8%8F-configuration-details)
+- [GitHub OAuth Integration](#-github-oauth-integration)
+- [Troubleshooting](#-troubleshooting)
+- [Advanced Usage](#-advanced-usage)
+- [Resources](#-resources)
 
 ---
 
-## Quick checklist (first-time setup)
+## 🎯 Overview
 
-- Ensure `cloudflared` is installed on your machine.
-- Obtain the credentials file `5fe1fab9-cbdd-459c-9c8f-d918343b0b2a.json` from the team lead (not via Git).
-- Place the credentials file at `Backend-Server/5fe1fab9-cbdd-459c-9c8f-d918343b0b2a.json` next to `cloudflared-config.yml`.
-- Start the backend locally on port 3000 before running the tunnel.
+This Cloudflare Tunnel provides a persistent, secure URL for your local backend server, making it perfect for OAuth callbacks and external integrations.
 
-## Prerequisites
+### Key Benefits
 
-Install cloudflared (Cloudflare Tunnel client):
+- 🔗 **Persistent URL**: Same URL every time (`https://app.sourcetolive.dev`)
+- 🔒 **Secure**: Traffic encrypted through Cloudflare's network
+- 🌍 **Public Access**: Share your local development with teammates or clients
+- ⚡ **No Port Forwarding**: Works behind firewalls and NAT
+
+---
+
+## 📊 Quick Reference
+
+| Property | Value |
+|----------|-------|
+| **Public URL** | `https://app.sourcetolive.dev` |
+| **Tunnel Name** | `sourcetolive-backend` |
+| **Tunnel ID** | `5fe1fab9-cbdd-459c-9c8f-d918343b0b2a` |
+| **Local Service** | `http://localhost:3000` |
+| **Config File** | `cloudflared-config.yml` |
+| **Credentials** | `5fe1fab9-cbdd-459c-9c8f-d918343b0b2a.json` |
+
+---
+
+## 🚀 First-Time Setup
+
+### Step 1: Install Cloudflared
 
 ```powershell
-# Download: https://github.com/cloudflare/cloudflared/releases
-# Or install via Chocolatey (Windows):
-choco install cloudflared
+choco install cloudflared -y
+```
 
-# Verify installation
+**Verify Installation**
+```powershell
 cloudflared --version
 ```
 
-## Start the tunnel (Quick Start)
-
-From the project directory:
-
-```powershell
-cd E:\SourceToLive\Backend-Server
-cloudflared tunnel --config cloudflared-config.yml run
-```
-
-From anywhere (absolute config path):
-
-```powershell
-cloudflared tunnel --config E:\SourceToLive\Backend-Server\cloudflared-config.yml run
-```
-
-Notes
-
-- Only one person should run the shared tunnel at a time.
-- The configuration uses a relative credentials path, so no local edits are required.
+Expected output: `cloudflared version 20XX.X.X`
 
 ---
 
-## Common commands
+### Step 2: Get Credentials File
 
-- Check whether cloudflared is running:
+The credentials file is required to authenticate your tunnel connection.
 
+1. **Locate the file**: `5fe1fab9-cbdd-459c-9c8f-d918343b0b2a.json`
+2. **Request access**: Contact your team lead for the credentials file
+3. **Placement**: Save it in the `Backend-Server` folder
+
+```
+Backend-Server/
+├── cloudflared-config.yml
+├── 5fe1fab9-cbdd-459c-9c8f-d918343b0b2a.json  ← Place here
+└── index.js
+```
+
+> **⚠️ Security Note**: This file is in `.gitignore` and should **never** be committed to version control.
+
+---
+
+### Step 3: First Run
+
+Start your backend server and tunnel:
+
+**Terminal 1 - Backend Server**
+```powershell
+cd E:\SourceToLive\Backend-Server
+node index.js
+```
+
+**Terminal 2 - Cloudflare Tunnel**
+```powershell
+cd E:\SourceToLive\Backend-Server
+
+cloudflared tunnel --config cloudflared-config.yml run
+```
+
+✅ **Success!** Your backend is now accessible at `https://app.sourcetolive.dev`
+
+---
+
+### Essential Commands
+
+**Check if Tunnel is Running**
 ```powershell
 Get-Process cloudflared
 ```
 
-- Stop cloudflared:
-
+**Stop the Tunnel**
 ```powershell
-Get-Process cloudflared | Stop-Process
+Get-Process cloudflared | Stop-Process -Force
 ```
 
-- View tunnel details:
-
+**View Tunnel Information**
 ```powershell
 cloudflared tunnel info sourcetolive-backend
 ```
 
-- List tunnels:
-
+**List All Tunnels**
 ```powershell
 cloudflared tunnel list
 ```
 
+**Run with Debug Logging**
+```powershell
+cloudflared tunnel --config cloudflared-config.yml run --loglevel debug
+```
+
 ---
 
-## Configuration
+## ⚙️ Configuration Details
 
-File: `cloudflared-config.yml`
+### Tunnel Configuration File
+
+**File**: `cloudflared-config.yml`
 
 ```yaml
 tunnel: 5fe1fab9-cbdd-459c-9c8f-d918343b0b2a
@@ -105,120 +146,242 @@ ingress:
   - service: http_status:404
 ```
 
-DNS entry (already configured in Cloudflare):
-
-- Type: CNAME
-- Name: `app`
-- Target: `5fe1fab9-cbdd-459c-9c8f-d918343b0b2a.cfargotunnel.com`
-- Proxy: Proxied (orange cloud)
-
----
-
-## GitHub OAuth configuration
-
-Use the following values when configuring the OAuth app in GitHub:
-
-- Homepage URL: `https://app.sourcetolive.dev`
-- Authorization callback URL: `https://app.sourcetolive.dev/api/auth/github/callback`
-
-Steps
-
-1. Go to GitHub Settings → Developer settings → OAuth Apps.
-2. Select the app and update the URLs above.
-3. Save changes.
+**Configuration Breakdown:**
+- `tunnel`: Unique tunnel identifier
+- `credentials-file`: Relative path to credentials (works on any machine)
+- `ingress`: Routing rules for incoming traffic
+  - First rule: Routes `app.sourcetolive.dev` to `localhost:3000`
+  - Catch-all: Returns 404 for unmatched hostnames
 
 ---
 
-## Troubleshooting
+### DNS Configuration
 
-Tunnel won't start
+The DNS is already configured in Cloudflare:
 
+| Type | Name | Target | Proxy |
+|------|------|--------|-------|
+| CNAME | `app` | `5fe1fab9-cbdd-459c-9c8f-d918343b0b2a.cfargotunnel.com` | ✅ Proxied |
+
+This creates the full domain: `app.sourcetolive.dev`
+
+---
+
+## 🔐 GitHub OAuth Integration
+
+Configure your GitHub OAuth App with these URLs:
+
+**Steps:**
+1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
+2. Select your OAuth App (or create a new one)
+3. Update the following fields:
+
+```
+Homepage URL:
+https://app.sourcetolive.dev
+
+Authorization callback URL:
+https://app.sourcetolive.dev/api/auth/github/callback
+```
+
+4. Save your changes
+
+**Environment Variables:**
+```env
+GITHUB_CLIENT_ID=your_client_id
+GITHUB_CLIENT_SECRET=your_client_secret
+CALLBACK_URL=https://app.sourcetolive.dev/api/auth/github/callback
+```
+
+---
+
+## 🐛 Troubleshooting
+
+### Issue: Tunnel Won't Start
+
+**Check Installation**
 ```powershell
-# Confirm cloudflared installed
 cloudflared --version
+```
 
-# Confirm credentials file exists
+**Verify Credentials File**
+```powershell
 Test-Path E:\SourceToLive\Backend-Server\5fe1fab9-cbdd-459c-9c8f-d918343b0b2a.json
 ```
 
-Tunnel stops or errors
-
+**Review Configuration**
 ```powershell
-cloudflared tunnel --config cloudflared-config.yml run --loglevel debug
+Get-Content E:\SourceToLive\Backend-Server\cloudflared-config.yml
 ```
 
-Port 3000 in use
+---
 
+### Issue: Port 3000 Already in Use
+
+**Find the Process**
 ```powershell
 Get-NetTCPConnection -LocalPort 3000 | Select-Object LocalAddress, LocalPort, State, OwningProcess
-Stop-Process -Id <ProcessId>
 ```
 
-Cannot access the public URL
-
-1. Confirm `Get-Process cloudflared` shows a running process.
-2. Confirm local server responds: `curl http://localhost:3000`.
-3. Confirm tunnel responds: `curl https://app.sourcetolive.dev`.
+**Stop the Process**
+```powershell
+Stop-Process -Id <ProcessId> -Force
+```
 
 ---
 
-## Important operational notes
+### Issue: Cannot Access Public URL
 
-1. Start the backend before starting the tunnel. Example:
+**Step-by-Step Diagnosis:**
 
-```powershell
-# Terminal A: start backend
-cd E:\SourceToLive\Backend-Server
-node index.js
+1. **Check if tunnel is running**
+   ```powershell
+   Get-Process cloudflared
+   ```
 
-# Terminal B: start tunnel
-cd E:\SourceToLive\Backend-Server
-cloudflared tunnel --config cloudflared-config.yml run
-```
+2. **Verify local backend**
+   ```powershell
+   curl http://localhost:3000
+   ```
 
-2. Keep the credentials file secure — never commit it to source control.
-3. The persistent URL `https://app.sourcetolive.dev` is used for OAuth and external callbacks.
-4. DNS changes may take several minutes to propagate.
+3. **Test tunnel connectivity**
+   ```powershell
+   curl https://app.sourcetolive.dev
+   ```
+
+4. **Check tunnel logs**
+   ```powershell
+   cloudflared tunnel --config cloudflared-config.yml run --loglevel debug
+   ```
 
 ---
 
-## Advanced usage
+### Issue: Multiple Team Members Running Tunnel
 
-- Install cloudflared as a Windows service (requires admin):
+**⚠️ Important**: Only one person can run the tunnel at a time.
+
+**Coordination Tips:**
+- Use team chat to announce when starting/stopping the tunnel
+- Create a shared schedule for tunnel usage
+- Consider setting up multiple tunnels for different team members
+
+---
+
+## 🎓 Advanced Usage
+
+### Run Tunnel as Windows Service
+
+Install the tunnel as a background service (requires Administrator):
 
 ```powershell
+# Install service
 cloudflared service install
-```
 
-- Manage service:
-
-```powershell
+# Start service
 Start-Service cloudflared
+
+# Stop service
 Stop-Service cloudflared
+
+# Remove service
+cloudflared service uninstall
 ```
 
-- Add or change hostnames (example):
+---
 
+### Add Additional Hostnames
+
+**Update Configuration:**
+```yaml
+ingress:
+  - hostname: api.sourcetolive.dev
+    service: http://localhost:3000
+  - hostname: admin.sourcetolive.dev
+    service: http://localhost:4000
+  - service: http_status:404
+```
+
+**Add DNS Record:**
 ```powershell
 cloudflared tunnel route dns sourcetolive-backend api.sourcetolive.dev
+cloudflared tunnel route dns sourcetolive-backend admin.sourcetolive.dev
 ```
 
 ---
 
-## Resources
+### Custom Port Configuration
 
-- Cloudflare Connect Apps: https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/
-- Cloudflare DNS: https://developers.cloudflare.com/dns/
-- GitHub OAuth docs: https://docs.github.com/en/developers/apps/building-oauth-apps
+To change the local port being tunneled:
+
+1. Update `cloudflared-config.yml`:
+   ```yaml
+   service: http://localhost:4000  # Change port here
+   ```
+
+2. Restart the tunnel
 
 ---
 
-## Support
+## 📚 Resources
 
-If you need help, contact the project lead or open an issue in the team tracker with:
+### Official Documentation
+- [Cloudflare Tunnel Documentation](https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/)
+- [Cloudflared GitHub Repository](https://github.com/cloudflare/cloudflared)
+- [Cloudflare DNS Documentation](https://developers.cloudflare.com/dns/)
 
-- Host OS and `cloudflared --version`
-- Tunnel logs (run with `--loglevel debug`)
-- Local server status and any error output
+### OAuth & Authentication
+- [GitHub OAuth Apps Guide](https://docs.github.com/en/developers/apps/building-oauth-apps)
+- [OAuth 2.0 Best Practices](https://oauth.net/2/)
 
-If you'd like, I can also commit this rewrite or refine wording further.
+### Troubleshooting
+- [Cloudflare Community Forum](https://community.cloudflare.com/)
+- [Cloudflared Issues on GitHub](https://github.com/cloudflare/cloudflared/issues)
+
+---
+
+## 🤝 Team Collaboration Guidelines
+
+### ✅ Do's
+- ✅ Coordinate with team before starting the tunnel
+- ✅ Stop the tunnel when you're done working
+- ✅ Keep credentials file secure and private
+- ✅ Test locally before using the tunnel
+- ✅ Share any configuration changes with the team
+
+### ❌ Don'ts
+- ❌ Never commit the credentials file to Git
+- ❌ Don't run tunnel when another team member is using it
+- ❌ Don't share credentials file via unsecured channels
+- ❌ Don't modify DNS settings without team discussion
+- ❌ Don't hardcode the tunnel URL in production code
+
+---
+
+## 🆘 Getting Help
+
+If you encounter issues:
+
+1. **Check this guide** - Most common issues are covered above
+2. **Review logs** - Run with `--loglevel debug` for detailed output
+3. **Verify basics** - Backend running? Credentials file present?
+4. **Ask the team** - Someone may have faced the same issue
+5. **Check firewall** - Ensure port 3000 isn't blocked
+
+---
+
+## 📝 Quick Checklist
+
+Before starting work with the tunnel:
+
+- [ ] Backend server is running on port 3000
+- [ ] Credentials file is in the correct location
+- [ ] No other team member is using the tunnel
+- [ ] Cloudflared is installed and up to date
+- [ ] Configuration file is properly formatted
+
+---
+
+<div align="center">
+
+**Made with ❤️ for the SourceToLive Team**
+</div>
