@@ -68,4 +68,5 @@ venv/
 *.temp
 *.log
 
-tunnel-url.txt
+# Cloudflare credentials
+5fe1fab9-cbdd-459c-9c8f-d918343b0b2a.json

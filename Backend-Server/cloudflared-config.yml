@@ -1,0 +1,7 @@
+﻿tunnel: 5fe1fab9-cbdd-459c-9c8f-d918343b0b2a
+credentials-file: ./5fe1fab9-cbdd-459c-9c8f-d918343b0b2a.json
+
+ingress:
+  - hostname: app.sourcetolive.dev
+    service: http://localhost:3000
+  - service: http_status:404

@@ -32,6 +32,12 @@ module.exports = {
   // Google OAuth Configuration
   GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID || '',
 
+  // GitHub OAuth Configuration
+  GITHUB_CLIENT_ID: process.env.GITHUB_CLIENT_ID || '',
+  GITHUB_CLIENT_SECRET: process.env.GITHUB_CLIENT_SECRET || '',
+  GITHUB_CALLBACK_URL: process.env.GITHUB_CALLBACK_URL || 'http://localhost:3000/api/auth/github/callback',
+  FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:5173',
+
   // AWS Configuration
   AWS_REGION: process.env.AWS_REGION || 'us-east-1',
   CLUSTER: process.env.CLUSTER || '',

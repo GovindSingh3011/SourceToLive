@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const verifyToken = require('../middleware/verifyToken');
 const {
     handleGitHubWebhook,
     handleGitLabWebhook,
@@ -12,9 +13,9 @@ const {
 router.post('/github/:projectId', handleGitHubWebhook);
 router.post('/gitlab/:projectId', handleGitLabWebhook);
 
-// Management endpoints (should be protected with auth middleware if needed)
-router.post('/enable/:projectId', enableAutoRedeploy);
-router.post('/disable/:projectId', disableAutoRedeploy);
-router.get('/status/:projectId', getWebhookStatus);
+// Management endpoints (protected with auth middleware)
+router.post('/enable/:projectId', verifyToken, enableAutoRedeploy);
+router.post('/disable/:projectId', verifyToken, disableAutoRedeploy);
+router.get('/status/:projectId', verifyToken, getWebhookStatus);
 
 module.exports = router;
