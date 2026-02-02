@@ -1,33 +1,95 @@
+@import "tailwindcss";
+
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
+  /* Design system CSS variables (from DESIGN_SYSTEM.md) */
+  --color-bg-primary: #0F1419;
+  --color-bg-secondary: #161B22;
+  --color-bg-tertiary: #21262D;
+
+  --color-primary: #1F6FEB;
+  --color-primary-hover: #388BFD;
+  --color-primary-active: #1860CA;
+  --color-secondary: #58A6FF;
+  --color-secondary-hover: #79C0FF;
+
+  --color-success: #3FB950;
+  --color-warning: #D29922;
+  --color-error: #DA3633;
+  --color-info: #58A6FF;
+
+  --color-text-primary: #C9D1D9;
+  --color-text-secondary: #8B949E;
+  --color-text-tertiary: #6E7681;
+
+  --color-border: #30363D;
+  --color-border-subtle: #21262D;
+  --color-disabled: #21262D;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+  --font-mono: 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+
+  --font-size-xs: 12px;
+  --font-size-sm: 14px;
+  --font-size-base: 16px;
+  --font-size-lg: 18px;
+  --font-size-xl: 24px;
+  --font-size-2xl: 32px;
+
+  --line-height-tight: 1.25;
+  --line-height-normal: 1.5;
+  --line-height-relaxed: 1.6;
+
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-xl: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+  --transition-fast: 150ms ease;
+  --transition-normal: 200ms ease-in-out;
+  --transition-slow: 300ms ease-in-out;
+
+  font-family: var(--font-sans);
+  line-height: var(--line-height-normal);
   font-weight: 400;
+  color-scheme: dark;
+}
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+/* Base element styles adapted to design system */
+html,
+body {
+  height: 100%;
+}
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--color-bg-primary);
+  color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 a {
   font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
+  color: var(--color-primary);
+  text-decoration: none;
 }
 
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+a:hover {
+  color: var(--color-secondary-hover);
 }
 
 h1 {
@@ -36,33 +98,40 @@ h1 {
 }
 
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
+  border-radius: 6px;
+  border: none;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background-color: var(--color-primary);
+  color: #ffffff;
   cursor: pointer;
-  transition: border-color 0.25s;
+  transition: background var(--transition-normal), box-shadow var(--transition-normal), transform 100ms ease;
 }
+
 button:hover {
-  border-color: #646cff;
+  background-color: var(--color-primary-hover);
+  box-shadow: 0 2px 8px rgba(31, 111, 235, 0.15);
 }
+
+button:active {
+  transform: scale(0.98);
+}
+
 button:focus,
 button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 @media (prefers-color-scheme: light) {
   :root {
-    color: #213547;
+    color-scheme: light;
+  }
+
+  body {
     background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
+    color: #213547;
   }
 }
