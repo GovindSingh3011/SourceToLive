@@ -90,25 +90,15 @@ const Login = () => {
 
     return (
         <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-            <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-blue-50 flex flex-col items-center justify-center px-4 relative">
-                {/* Sign Up Button - Fixed to top right of screen */}
-                <div className="fixed top-8 right-8 z-20">
-                    <Link
-                        to="/signup"
-                        className="px-5 py-2 text-sm font-semibold text-gray-700 rounded-lg border-2 border-gray-200 hover:border-[#3B7DC3] hover:text-[#3B7DC3] transition-all duration-300 bg-white/80 backdrop-blur-sm"
-                    >
-                        Sign Up
-                    </Link>
-                </div>
-
-                <div className="w-full max-width-[480px] max-w-md relative z-10">
+            <div className="bg-linear-to-br flex flex-col items-center justify-center relative">
+                <div className="w-full max-w-md relative z-10">
                     {/* Header with centered logo */}
-                    <div className="flex justify-center items-center mb-4">
-                        <img src={Logo} alt="SourceToLive Logo" className="h-18 w-auto" />
+                    <div className="flex justify-center items-center mb-4 sm:mb-6">
+                        <img src={Logo} alt="SourceToLive Logo" className="h-12 sm:h-16 md:h-20 w-auto" />
                     </div>
 
                     {/* Login Card */}
-                    <div className="bg-white/80 backdrop-blur-xl border-2 border-transparent bg-clip-padding rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] p-10 hover:shadow-[0_12px_48px_rgba(59,125,195,0.15)] transition-all duration-300"
+                    <div className="bg-white/80 backdrop-blur-xl border-2 border-transparent bg-clip-padding rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] p-6 sm:p-8 md:p-10 hover:shadow-[0_12px_48px_rgba(59,125,195,0.15)] transition-all duration-300"
                         style={{
                             backgroundImage: 'linear-gradient(white, white), linear-gradient(135deg, rgba(59, 125, 195, 0.15), rgba(76, 175, 80, 0.15))',
                             backgroundOrigin: 'padding-box, border-box',
@@ -116,29 +106,29 @@ const Login = () => {
                         }}>
 
                         {/* Logo/Heading */}
-                        <div className="mb-10 text-center">
-                            <h1 className="text-[42px] font-bold text-gray-900 mb-3 tracking-tight leading-tight">
+                        <div className="mb-6 sm:mb-8 md:mb-10 text-center">
+                            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-2 sm:mb-3 tracking-tight leading-tight">
                                 Welcome Back
                             </h1>
-                            <p className="text-gray-500 text-[15px] font-medium">
+                            <p className="text-gray-500 text-xs sm:text-sm md:text-base font-medium">
                                 Sign in to deploy your projects instantly
                             </p>
                         </div>
 
                         {/* Error Message */}
                         {error && (
-                            <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
-                                <p className="text-red-700 text-sm font-medium">{error}</p>
+                            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
+                                <p className="text-red-700 text-xs sm:text-sm font-medium">{error}</p>
                             </div>
                         )}
 
                         {/* Login Form */}
-                        <form onSubmit={handleSubmit} className="space-y-5">
+                        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
                             {/* Email Input */}
                             <div>
                                 <label
                                     htmlFor="email"
-                                    className="block text-[13px] font-bold text-gray-900 mb-2.5 uppercase tracking-wide"
+                                    className="block text-xs sm:text-sm font-bold text-gray-900 mb-1.5 sm:mb-2.5 uppercase tracking-wide"
                                 >
                                     Email Address
                                 </label>
@@ -149,7 +139,7 @@ const Login = () => {
                                     value={formData.email}
                                     onChange={handleChange}
                                     required
-                                    className="w-full h-12 px-4 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-[15px] placeholder-gray-400 focus:outline-none focus:border-[#3B7DC3] focus:ring-4 focus:ring-[#3B7DC3]/10 transition-all duration-300 font-medium"
+                                    className="w-full h-10 sm:h-12 px-3 sm:px-4 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-sm sm:text-base placeholder-gray-400 focus:outline-none focus:border-[#3B7DC3] focus:ring-4 focus:ring-[#3B7DC3]/10 transition-all duration-300 font-medium"
                                     placeholder="you@example.com"
                                 />
                             </div>
@@ -158,7 +148,7 @@ const Login = () => {
                             <div>
                                 <label
                                     htmlFor="password"
-                                    className="block text-[13px] font-bold text-gray-900 mb-2.5 uppercase tracking-wide"
+                                    className="block text-xs sm:text-sm font-bold text-gray-900 mb-1.5 sm:mb-2.5 uppercase tracking-wide"
                                 >
                                     Password
                                 </label>
@@ -169,7 +159,7 @@ const Login = () => {
                                     value={formData.password}
                                     onChange={handleChange}
                                     required
-                                    className="w-full h-12 px-4 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-[15px] placeholder-gray-400 focus:outline-none focus:border-[#3B7DC3] focus:ring-4 focus:ring-[#3B7DC3]/10 transition-all duration-300 font-medium"
+                                    className="w-full h-10 sm:h-12 px-3 sm:px-4 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-sm sm:text-base placeholder-gray-400 focus:outline-none focus:border-[#3B7DC3] focus:ring-4 focus:ring-[#3B7DC3]/10 transition-all duration-300 font-medium"
                                     placeholder="Enter your password"
                                 />
                             </div>
@@ -178,7 +168,7 @@ const Login = () => {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full h-12 bg-linear-to-r from-[#3B7DC3] to-[#2A5F99] text-white text-[15px] font-bold rounded-lg hover:from-[#1F3A5F] hover:to-[#152B47] active:scale-[0.99] disabled:from-gray-100 disabled:to-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-300 shadow-[0_4px_16px_rgba(59,125,195,0.25)] hover:shadow-[0_6px_24px_rgba(59,125,195,0.35)] hover:-translate-y-0.5 mt-6 uppercase tracking-wide"
+                                className="w-full h-10 sm:h-12 bg-linear-to-r from-[#3B7DC3] to-[#2A5F99] text-white text-xs sm:text-base font-bold rounded-lg hover:from-[#1F3A5F] hover:to-[#152B47] active:scale-[0.99] disabled:from-gray-100 disabled:to-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-300 shadow-[0_4px_16px_rgba(59,125,195,0.25)] hover:shadow-[0_6px_24px_rgba(59,125,195,0.35)] hover:-translate-y-0.5 mt-4 sm:mt-6 uppercase tracking-wide"
                             >
                                 {loading ? (
                                     <span className="flex items-center justify-center gap-2">
@@ -186,18 +176,19 @@ const Login = () => {
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                         </svg>
-                                        Logging in...
+                                        <span className="hidden sm:inline">Logging in...</span>
+                                        <span className="sm:hidden">Logging...</span>
                                     </span>
                                 ) : 'Sign In'}
                             </button>
                         </form>
 
                         {/* Divider */}
-                        <div className="relative my-8">
+                        <div className="relative my-6 sm:my-8">
                             <div className="absolute inset-0 flex items-center">
                                 <div className="w-full border-t-2 border-gray-100"></div>
                             </div>
-                            <div className="relative flex justify-center text-[11px]">
+                            <div className="relative flex justify-center text-xs sm:text-sm">
                                 <span className="px-4 bg-white text-gray-400 font-bold uppercase tracking-widest">
                                     Or continue with
                                 </span>
@@ -206,21 +197,21 @@ const Login = () => {
 
                         {/* Google Login Button */}
                         <div className="w-full flex justify-center">
-                            <div className="hover:scale-105 transition-transform duration-300">
+                            <div className="hover:scale-105 transition-transform duration-300 w-full max-w-sm">
                                 <GoogleLogin
                                     onSuccess={handleGoogleSuccess}
                                     onError={handleGoogleError}
                                     theme="outline"
                                     size="large"
-                                    width="384"
+                                    width="100%"
                                     text="signin_with"
                                 />
                             </div>
                         </div>
 
                         {/* Sign Up Link */}
-                        <div className="mt-8 text-center">
-                            <p className="text-gray-500 text-[15px] font-medium">
+                        <div className="mt-6 sm:mt-8 text-center">
+                            <p className="text-gray-500 text-xs sm:text-base font-medium">
                                 Don't have an account?{' '}
                                 <Link
                                     to="/signup"
@@ -233,10 +224,10 @@ const Login = () => {
                     </div>
 
                     {/* Footer */}
-                    <div className="mt-8 text-center">
-                        <p className="text-gray-400 text-xs flex items-center justify-center gap-2">
+                    <div className="mt-6 sm:mt-8 text-center">
+                        <p className="text-gray-400 text-xs flex items-center justify-center gap-2 flex-wrap">
                             <span>Secured by SourceToLive</span>
-                            <span>•</span>
+                            <span className="hidden sm:inline">•</span>
                             <span>© 2026</span>
                         </p>
                     </div>

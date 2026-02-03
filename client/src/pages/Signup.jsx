@@ -195,23 +195,14 @@ const Signup = () => {
 
     return (
         <GoogleOAuthProvider clientId={GOOGLE_CLIENT_ID}>
-            <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-blue-50 flex flex-col items-center justify-center px-4 relative">
-                <div className="fixed top-8 right-8 z-20">
-                    <Link
-                        to="/login"
-                        className="px-5 py-2 text-sm font-semibold text-gray-700 rounded-lg border-2 border-gray-200 hover:border-[#3B7DC3] hover:text-[#3B7DC3] transition-all duration-300 bg-white/80 backdrop-blur-sm"
-                    >
-                        Sign In
-                    </Link>
-                </div>
-
-                <div className="w-full max-width-[480px] max-w-md relative z-10">
-                    <div className="flex justify-center items-center mb-4">
-                        <img src={Logo} alt="SourceToLive Logo" className="h-18 w-auto" />
+            <div className="bg-linear-to-br flex flex-col items-center justify-center px-4 relative">
+                <div className="w-full max-w-md relative z-10 mt-12 sm:mt-0">
+                    <div className="flex justify-center items-center mb-4 sm:mb-6">
+                        <img src={Logo} alt="SourceToLive Logo" className="h-12 sm:h-16 md:h-20 w-auto" />
                     </div>
 
                     <div
-                        className="bg-white/80 backdrop-blur-xl border-2 border-transparent bg-clip-padding rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] p-10 hover:shadow-[0_12px_48px_rgba(59,125,195,0.15)] transition-all duration-300"
+                        className="bg-white/80 backdrop-blur-xl border-2 border-transparent bg-clip-padding rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] p-6 sm:p-8 md:p-10 hover:shadow-[0_12px_48px_rgba(59,125,195,0.15)] transition-all duration-300"
                         style={{
                             backgroundImage:
                                 'linear-gradient(white, white), linear-gradient(135deg, rgba(59, 125, 195, 0.15), rgba(76, 175, 80, 0.15))',
@@ -219,33 +210,33 @@ const Signup = () => {
                             backgroundClip: 'padding-box, border-box'
                         }}
                     >
-                        <div className="mb-10 text-center">
-                            <h1 className="text-[42px] font-bold text-gray-900 mb-3 tracking-tight leading-tight">
+                        <div className="mb-6 sm:mb-8 md:mb-10 text-center">
+                            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-2 sm:mb-3 tracking-tight leading-tight">
                                 Create Account
                             </h1>
-                            <p className="text-gray-500 text-[15px] font-medium">
+                            <p className="text-gray-500 text-xs sm:text-sm md:text-base font-medium">
                                 Join SourceToLive to deploy instantly
                             </p>
                         </div>
 
                         {error && (
-                            <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
-                                <p className="text-red-700 text-sm font-medium">{error}</p>
+                            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-red-50 border-l-4 border-red-500 rounded-lg">
+                                <p className="text-red-700 text-xs sm:text-sm font-medium">{error}</p>
                             </div>
                         )}
 
                         {success && (
-                            <div className="mb-6 p-4 bg-emerald-50 border-l-4 border-emerald-500 rounded-lg">
-                                <p className="text-emerald-700 text-sm font-medium">{success}</p>
+                            <div className="mb-4 sm:mb-6 p-3 sm:p-4 bg-emerald-50 border-l-4 border-emerald-500 rounded-lg">
+                                <p className="text-emerald-700 text-xs sm:text-sm font-medium">{success}</p>
                             </div>
                         )}
 
                         {mode === 'register' && (
-                            <form onSubmit={handleRegister} className="space-y-5">
+                            <form onSubmit={handleRegister} className="space-y-4 sm:space-y-5">
                                 <div>
                                     <label
                                         htmlFor="firstName"
-                                        className="block text-[13px] font-bold text-gray-900 mb-2.5 uppercase tracking-wide"
+                                        className="block text-xs sm:text-sm font-bold text-gray-900 mb-1.5 sm:mb-2.5 uppercase tracking-wide"
                                     >
                                         First Name
                                     </label>
@@ -257,7 +248,7 @@ const Signup = () => {
                                         onChange={handleChange}
                                         required
                                         disabled={loading}
-                                        className="w-full h-12 px-4 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-[15px] placeholder-gray-400 focus:outline-none focus:border-[#3B7DC3] focus:ring-4 focus:ring-[#3B7DC3]/10 transition-all duration-300 font-medium"
+                                        className="w-full h-10 sm:h-12 px-3 sm:px-4 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-sm sm:text-base placeholder-gray-400 focus:outline-none focus:border-[#3B7DC3] focus:ring-4 focus:ring-[#3B7DC3]/10 transition-all duration-300 font-medium"
                                         placeholder="John"
                                     />
                                 </div>
@@ -265,7 +256,7 @@ const Signup = () => {
                                 <div>
                                     <label
                                         htmlFor="lastName"
-                                        className="block text-[13px] font-bold text-gray-900 mb-2.5 uppercase tracking-wide"
+                                        className="block text-xs sm:text-sm font-bold text-gray-900 mb-1.5 sm:mb-2.5 uppercase tracking-wide"
                                     >
                                         Last Name
                                     </label>
@@ -277,7 +268,7 @@ const Signup = () => {
                                         onChange={handleChange}
                                         required
                                         disabled={loading}
-                                        className="w-full h-12 px-4 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-[15px] placeholder-gray-400 focus:outline-none focus:border-[#3B7DC3] focus:ring-4 focus:ring-[#3B7DC3]/10 transition-all duration-300 font-medium"
+                                        className="w-full h-10 sm:h-12 px-3 sm:px-4 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-sm sm:text-base placeholder-gray-400 focus:outline-none focus:border-[#3B7DC3] focus:ring-4 focus:ring-[#3B7DC3]/10 transition-all duration-300 font-medium"
                                         placeholder="Doe"
                                     />
                                 </div>
@@ -285,7 +276,7 @@ const Signup = () => {
                                 <div>
                                     <label
                                         htmlFor="email"
-                                        className="block text-[13px] font-bold text-gray-900 mb-2.5 uppercase tracking-wide"
+                                        className="block text-xs sm:text-sm font-bold text-gray-900 mb-1.5 sm:mb-2.5 uppercase tracking-wide"
                                     >
                                         Email Address
                                     </label>
@@ -297,7 +288,7 @@ const Signup = () => {
                                         onChange={handleChange}
                                         required
                                         disabled={loading}
-                                        className="w-full h-12 px-4 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-[15px] placeholder-gray-400 focus:outline-none focus:border-[#3B7DC3] focus:ring-4 focus:ring-[#3B7DC3]/10 transition-all duration-300 font-medium"
+                                        className="w-full h-10 sm:h-12 px-3 sm:px-4 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-sm sm:text-base placeholder-gray-400 focus:outline-none focus:border-[#3B7DC3] focus:ring-4 focus:ring-[#3B7DC3]/10 transition-all duration-300 font-medium"
                                         placeholder="you@example.com"
                                     />
                                 </div>
@@ -305,16 +296,16 @@ const Signup = () => {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full h-12 bg-linear-to-r from-[#3B7DC3] to-[#2A5F99] text-white text-[15px] font-bold rounded-lg hover:from-[#1F3A5F] hover:to-[#152B47] active:scale-[0.99] disabled:from-gray-100 disabled:to-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-300 shadow-[0_4px_16px_rgba(59,125,195,0.25)] hover:shadow-[0_6px_24px_rgba(59,125,195,0.35)] hover:-translate-y-0.5 mt-6 uppercase tracking-wide"
+                                    className="w-full h-10 sm:h-12 bg-linear-to-r from-[#3B7DC3] to-[#2A5F99] text-white text-xs sm:text-base font-bold rounded-lg hover:from-[#1F3A5F] hover:to-[#152B47] active:scale-[0.99] disabled:from-gray-100 disabled:to-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-300 shadow-[0_4px_16px_rgba(59,125,195,0.25)] hover:shadow-[0_6px_24px_rgba(59,125,195,0.35)] hover:-translate-y-0.5 mt-4 sm:mt-6 uppercase tracking-wide"
                                 >
                                     {loading ? 'Sending OTP...' : 'Create Account'}
                                 </button>
 
-                                <div className="relative my-8">
+                                <div className="relative my-6 sm:my-8">
                                     <div className="absolute inset-0 flex items-center">
                                         <div className="w-full border-t-2 border-gray-100"></div>
                                     </div>
-                                    <div className="relative flex justify-center text-[11px]">
+                                    <div className="relative flex justify-center text-xs sm:text-sm">
                                         <span className="px-4 bg-white text-gray-400 font-bold uppercase tracking-widest">
                                             Or continue with
                                         </span>
@@ -322,20 +313,20 @@ const Signup = () => {
                                 </div>
 
                                 <div className="w-full flex justify-center">
-                                    <div className="hover:scale-105 transition-transform duration-300">
+                                    <div className="hover:scale-105 transition-transform duration-300 w-full max-w-sm">
                                         <GoogleLogin
                                             onSuccess={handleGoogleSuccess}
                                             onError={handleGoogleError}
                                             theme="outline"
                                             size="large"
-                                            width="384"
+                                            width="100%"
                                             text="signup_with"
                                         />
                                     </div>
                                 </div>
 
-                                <div className="mt-8 text-center">
-                                    <p className="text-gray-500 text-[15px] font-medium">
+                                <div className="mt-6 sm:mt-8 text-center">
+                                    <p className="text-gray-500 text-xs sm:text-base font-medium">
                                         Already have an account?{' '}
                                         <Link
                                             to="/login"
@@ -349,20 +340,20 @@ const Signup = () => {
                         )}
 
                         {mode === 'verify' && (
-                            <form onSubmit={handleVerify} className="space-y-5">
-                                <div className="rounded-lg border border-gray-100 bg-gray-50 px-4 py-3">
-                                    <p className="text-gray-600 text-sm">We sent a verification code to</p>
-                                    <p className="text-gray-900 font-semibold text-sm">{pendingEmail}</p>
+                            <form onSubmit={handleVerify} className="space-y-4 sm:space-y-5">
+                                <div className="rounded-lg border border-gray-100 bg-gray-50 px-3 sm:px-4 py-2 sm:py-3">
+                                    <p className="text-gray-600 text-xs sm:text-sm">We sent a verification code to</p>
+                                    <p className="text-gray-900 font-semibold text-xs sm:text-sm">{pendingEmail}</p>
                                 </div>
 
                                 <div>
                                     <label
                                         htmlFor="otp-0"
-                                        className="block text-[13px] font-bold text-gray-900 mb-2.5 uppercase tracking-wide"
+                                        className="block text-xs sm:text-sm font-bold text-gray-900 mb-1.5 sm:mb-2.5 uppercase tracking-wide"
                                     >
                                         Verification Code
                                     </label>
-                                    <div className="grid grid-cols-6 gap-2" onPaste={handleOtpPaste}>
+                                    <div className="grid grid-cols-6 gap-1.5 sm:gap-2" onPaste={handleOtpPaste}>
                                         {otpDigits.map((digit, index) => (
                                             <input
                                                 key={index}
@@ -378,7 +369,7 @@ const Signup = () => {
                                                 onChange={(e) => handleOtpChange(index, e.target.value)}
                                                 onKeyDown={(e) => handleOtpKeyDown(index, e)}
                                                 disabled={loading}
-                                                className="h-12 w-full rounded-lg border-2 border-gray-200 bg-white text-center text-[16px] font-semibold text-gray-900 focus:outline-none focus:border-[#3B7DC3] focus:ring-4 focus:ring-[#3B7DC3]/10 transition-all duration-300"
+                                                className="h-10 sm:h-12 w-full rounded-lg border-2 border-gray-200 bg-white text-center text-sm sm:text-base font-semibold text-gray-900 focus:outline-none focus:border-[#3B7DC3] focus:ring-4 focus:ring-[#3B7DC3]/10 transition-all duration-300"
                                                 placeholder="•"
                                             />
                                         ))}
@@ -388,7 +379,7 @@ const Signup = () => {
                                 <div>
                                     <label
                                         htmlFor="password"
-                                        className="block text-[13px] font-bold text-gray-900 mb-2.5 uppercase tracking-wide"
+                                        className="block text-xs sm:text-sm font-bold text-gray-900 mb-1.5 sm:mb-2.5 uppercase tracking-wide"
                                     >
                                         Set Password
                                     </label>
@@ -401,7 +392,7 @@ const Signup = () => {
                                         required
                                         minLength={6}
                                         disabled={loading}
-                                        className="w-full h-12 px-4 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-[15px] placeholder-gray-400 focus:outline-none focus:border-[#3B7DC3] focus:ring-4 focus:ring-[#3B7DC3]/10 transition-all duration-300 font-medium"
+                                        className="w-full h-10 sm:h-12 px-3 sm:px-4 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-sm sm:text-base placeholder-gray-400 focus:outline-none focus:border-[#3B7DC3] focus:ring-4 focus:ring-[#3B7DC3]/10 transition-all duration-300 font-medium"
                                         placeholder="Create a password"
                                     />
                                     <p className="text-xs text-gray-400 mt-2">Minimum 6 characters</p>
@@ -410,7 +401,7 @@ const Signup = () => {
                                 <div>
                                     <label
                                         htmlFor="confirmPassword"
-                                        className="block text-[13px] font-bold text-gray-900 mb-2.5 uppercase tracking-wide"
+                                        className="block text-xs sm:text-sm font-bold text-gray-900 mb-1.5 sm:mb-2.5 uppercase tracking-wide"
                                     >
                                         Confirm Password
                                     </label>
@@ -426,7 +417,7 @@ const Signup = () => {
                                         required
                                         minLength={6}
                                         disabled={loading}
-                                        className="w-full h-12 px-4 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-[15px] placeholder-gray-400 focus:outline-none focus:border-[#3B7DC3] focus:ring-4 focus:ring-[#3B7DC3]/10 transition-all duration-300 font-medium"
+                                        className="w-full h-10 sm:h-12 px-3 sm:px-4 bg-white border-2 border-gray-200 rounded-lg text-gray-900 text-sm sm:text-base placeholder-gray-400 focus:outline-none focus:border-[#3B7DC3] focus:ring-4 focus:ring-[#3B7DC3]/10 transition-all duration-300 font-medium"
                                         placeholder="Re-enter your password"
                                     />
                                 </div>
@@ -434,7 +425,7 @@ const Signup = () => {
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="w-full h-12 bg-linear-to-r from-[#3B7DC3] to-[#2A5F99] text-white text-[15px] font-bold rounded-lg hover:from-[#1F3A5F] hover:to-[#152B47] active:scale-[0.99] disabled:from-gray-100 disabled:to-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-300 shadow-[0_4px_16px_rgba(59,125,195,0.25)] hover:shadow-[0_6px_24px_rgba(59,125,195,0.35)] hover:-translate-y-0.5 mt-6 uppercase tracking-wide"
+                                    className="w-full h-10 sm:h-12 bg-linear-to-r from-[#3B7DC3] to-[#2A5F99] text-white text-xs sm:text-base font-bold rounded-lg hover:from-[#1F3A5F] hover:to-[#152B47] active:scale-[0.99] disabled:from-gray-100 disabled:to-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-all duration-300 shadow-[0_4px_16px_rgba(59,125,195,0.25)] hover:shadow-[0_6px_24px_rgba(59,125,195,0.35)] hover:-translate-y-0.5 mt-4 sm:mt-6 uppercase tracking-wide"
                                 >
                                     {loading ? 'Verifying...' : 'Verify & Complete Signup'}
                                 </button>
@@ -448,7 +439,7 @@ const Signup = () => {
                                         setConfirmPassword('');
                                         setError('');
                                     }}
-                                    className="w-full h-12 border-2 border-gray-200 text-gray-600 text-[14px] font-bold rounded-lg hover:border-[#3B7DC3] hover:text-[#3B7DC3] transition-all duration-300"
+                                    className="w-full h-10 sm:h-12 border-2 border-gray-200 text-gray-600 text-xs sm:text-base font-bold rounded-lg hover:border-[#3B7DC3] hover:text-[#3B7DC3] transition-all duration-300"
                                 >
                                     Back to Registration
                                 </button>
@@ -456,10 +447,10 @@ const Signup = () => {
                         )}
                     </div>
 
-                    <div className="mt-8 text-center">
-                        <p className="text-gray-400 text-xs flex items-center justify-center gap-2">
+                    <div className="mt-6 sm:mt-8 text-center">
+                        <p className="text-gray-400 text-xs flex items-center justify-center gap-2 flex-wrap">
                             <span>Secured by SourceToLive</span>
-                            <span>•</span>
+                            <span className="hidden sm:inline">•</span>
                             <span>© 2026</span>
                         </p>
                     </div>
