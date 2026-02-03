@@ -20,6 +20,12 @@ router.post('/github-token', verifyToken, authController.saveGitHubToken);
 router.get('/github-token/status', verifyToken, authController.getGitHubTokenStatus);
 router.delete('/github-token', verifyToken, authController.removeGitHubToken);
 
+// User info routes
+router.get('/me', verifyToken, authController.getCurrentUser);
+
+// GitHub repositories
+router.get('/github/repos', verifyToken, authController.getGithubRepos);
+
 // Debug routes (development only)
 router.get('/debug/pending', authController.getPendingRegistrations);
 router.get('/debug/otp/:email', authController.getOTPForEmail);

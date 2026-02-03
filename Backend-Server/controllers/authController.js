@@ -467,12 +467,12 @@ const handleGitHubCallback = async (req, res) => {
             { githubAccessToken: accessToken }
         );
 
-        // Redirect back to settings with success
-        return res.redirect(`${config.FRONTEND_URL}/settings?success=GitHub account connected successfully&username=${encodeURIComponent(githubUser.login)}`);
+        // Redirect back to add-project with success
+        return res.redirect(`${config.FRONTEND_URL}/add-project?github_connected=true`);
 
     } catch (error) {
         console.error('GitHub OAuth callback error:', error);
-        return res.redirect(`${config.FRONTEND_URL}/settings?error=${encodeURIComponent(error.message)}`);
+        return res.redirect(`${config.FRONTEND_URL}/add-project?error=${encodeURIComponent(error.message)}`);
     }
 };
 
@@ -650,6 +650,108 @@ const removeGitHubToken = async (req, res) => {
     }
 };
 
+/**
+ * Get current user information
+ * GET /api/auth/me
+ */
+const getCurrentUser = async (req, res) => {
+    try {
+        const userId = req.user.userId; // From verifyToken middleware
+
+        const user = await User.findOne({ userId }).select('-hashedPassword');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+
+        return res.status(200).json({
+            user: {
+                userId: user.userId,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                role: user.role,
+                authProvider: user.authProvider,
+                githubAccessToken: user.githubAccessToken ? '***' : null,
+                hasGithubToken: !!user.githubAccessToken,
+                avatar: user.avatar,
+                phone: user.phone,
+                address: user.address
+            }
+        });
+
+    } catch (error) {
+        console.error('Get current user error:', error);
+        return res.status(500).json({
+            message: 'Failed to get user information',
+            error: error.message
+        });
+    }
+};
+
+/**
+ * Get GitHub repositories for authenticated user
+ * GET /api/auth/github/repos
+ */
+const getGithubRepos = async (req, res) => {
+    try {
+        const userId = req.user.userId; // From verifyToken middleware
+
+        const user = await User.findOne({ userId });
+        if (!user || !user.githubAccessToken) {
+            return res.status(400).json({
+                message: 'GitHub account not connected. Please connect your GitHub account first.'
+            });
+        }
+
+        // Fetch repositories from GitHub
+        const response = await fetch('https://api.github.com/user/repos?per_page=100&sort=updated', {
+            headers: {
+                'Authorization': `Bearer ${user.githubAccessToken}`,
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        });
+
+        if (!response.ok) {
+            // Token might be invalid
+            if (response.status === 401) {
+                return res.status(401).json({
+                    message: 'GitHub token is invalid or expired. Please reconnect your GitHub account.'
+                });
+            }
+            throw new Error(`GitHub API error: ${response.statusText}`);
+        }
+
+        const repos = await response.json();
+
+        // Format repository data
+        const formattedRepos = repos.map(repo => ({
+            id: repo.id,
+            name: repo.name,
+            fullName: repo.full_name,
+            owner: repo.owner.login,
+            private: repo.private,
+            description: repo.description,
+            cloneUrl: repo.clone_url,
+            htmlUrl: repo.html_url,
+            defaultBranch: repo.default_branch,
+            updatedAt: repo.updated_at,
+            language: repo.language
+        }));
+
+        return res.status(200).json({
+            repos: formattedRepos,
+            count: formattedRepos.length
+        });
+
+    } catch (error) {
+        console.error('Get GitHub repos error:', error);
+        return res.status(500).json({
+            message: 'Failed to fetch GitHub repositories',
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     loginUser,
     registerUser,
@@ -661,5 +763,7 @@ module.exports = {
     handleGitHubCallback,
     saveGitHubToken,
     getGitHubTokenStatus,
-    removeGitHubToken
+    removeGitHubToken,
+    getCurrentUser,
+    getGithubRepos
 };
