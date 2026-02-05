@@ -14,6 +14,9 @@ COPY ./main.sh /home/app/main.sh
 COPY ./script.js /home/app/script.js
 COPY ./package*.json ./
 
+RUN npm install -g npm@latest
+ENV NO_UPDATE_NOTIFIER=1
+
 RUN npm install
 
 RUN sed -i 's/\r$//' /home/app/main.sh && chmod +x /home/app/main.sh
