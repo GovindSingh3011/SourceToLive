@@ -368,7 +368,9 @@ async function streamLogs(req, res) {
 
 async function listProjects(req, res) {
   try {
-    const items = await Project.find({}).sort({ createdAt: -1 }).lean();
+    const userId = req.user?.userId;
+    const query = userId ? { 'owner.userId': userId } : {};
+    const items = await Project.find(query).sort({ createdAt: -1 }).lean();
     return res.json({ items });
   } catch (err) {
     return res.status(500).json({ error: err?.message ?? String(err) });

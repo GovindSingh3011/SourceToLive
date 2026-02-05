@@ -4,7 +4,7 @@ const { createProject, streamLogs, getArchivedLogs, listProjects, getProject } =
 const verifyToken = require('../middleware/verifyToken');
 const isUser = require('../middleware/isUser');
 
-router.get('/', listProjects);
+router.get('/', verifyToken, isUser, listProjects);
 router.get('/:projectId', getProject);
 router.post('/', verifyToken, isUser, createProject);
 router.get('/:projectId/logs/stream', streamLogs);
