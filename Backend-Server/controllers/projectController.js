@@ -59,6 +59,7 @@ async function flushAndArchiveLogs(logGroupName, logStreamName, projectId) {
  */
 async function createProject(req, res) {
   const { GIT_REPOSITORY__URL, PROJECT_ID, INSTALL_CMD, BUILD_CMD, BUILD_ROOT } = req.body || {};
+  const ownerName = [req.user?.firstName, req.user?.lastName].filter(Boolean).join(' ').trim() || null;
 
   if (!GIT_REPOSITORY__URL || typeof GIT_REPOSITORY__URL !== 'string') {
     return res.status(400).json({ error: 'GIT_REPOSITORY__URL is required and must be a string' });
@@ -108,6 +109,12 @@ async function createProject(req, res) {
         gitRepositoryUrl: GIT_REPOSITORY__URL,
         deployUrl: expectedDeployUrl,
         status: 'queued',
+        owner: {
+          id: req.user?.id || null,
+          userId: req.user?.userId || null,
+          name: ownerName,
+          email: req.user?.email || null,
+        },
         buildConfig: {
           installCmd: INSTALL_CMD || 'npm install',
           buildCmd: BUILD_CMD || 'npm run build',

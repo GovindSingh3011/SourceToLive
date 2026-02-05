@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const { createProject, streamLogs, getArchivedLogs, listProjects, getProject } = require('../controllers/projectController');
+const verifyToken = require('../middleware/verifyToken');
+const isUser = require('../middleware/isUser');
 
 router.get('/', listProjects);
 router.get('/:projectId', getProject);
-router.post('/', createProject);
+router.post('/', verifyToken, isUser, createProject);
 router.get('/:projectId/logs/stream', streamLogs);
 router.get('/:projectId/logs/archive', getArchivedLogs);
 
