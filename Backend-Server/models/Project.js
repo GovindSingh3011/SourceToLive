@@ -65,6 +65,11 @@ const projectSchema = new mongoose.Schema({
         type: String,
         default: null,
     },
+    lastCommitMessage: {
+        type: String,
+        default: null,
+        trim: true,
+    },
     buildConfig: {
         installCmd: {
             type: String,

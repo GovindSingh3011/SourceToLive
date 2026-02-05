@@ -3,10 +3,43 @@ const { CloudWatchLogsClient, GetLogEventsCommand, CreateLogGroupCommand, Delete
 const { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } = require('@aws-sdk/client-s3');
 const config = require('../config');
 const Project = require('../models/Project');
+const User = require('../models/User');
 
 const ecsClient = new ECSClient({ region: config.AWS_REGION });
 const logsClient = new CloudWatchLogsClient({ region: config.AWS_REGION });
 const s3Client = new S3Client({ region: config.AWS_REGION });
+
+function parseGitHubRepo(gitUrl) {
+  if (!gitUrl || typeof gitUrl !== 'string') return null;
+  const match = gitUrl.trim().match(/github\.com[\/:]([^\/]+)\/([^\/\.]+)(\.git)?$/i);
+  if (!match) return null;
+  return { owner: match[1], repo: match[2] };
+}
+
+async function fetchLastGitHubCommitInfo(gitUrl, accessToken) {
+  const repoInfo = parseGitHubRepo(gitUrl);
+  if (!repoInfo) return null;
+
+  const headers = {
+    'Accept': 'application/vnd.github.v3+json',
+  };
+  if (accessToken) {
+    headers['Authorization'] = `Bearer ${accessToken}`;
+  }
+
+  const apiUrl = `https://api.github.com/repos/${repoInfo.owner}/${repoInfo.repo}/commits?per_page=1`;
+  const response = await fetch(apiUrl, { headers });
+  if (!response.ok) return null;
+
+  const data = await response.json();
+  const commit = Array.isArray(data) ? data[0] : data;
+  if (!commit) return null;
+
+  return {
+    message: commit?.commit?.message || null,
+    hash: commit?.sha || null,
+  };
+}
 
 async function flushAndArchiveLogs(logGroupName, logStreamName, projectId) {
 
@@ -100,6 +133,24 @@ async function createProject(req, res) {
   };
 
   try {
+    let lastCommitMessage = null;
+    let lastCommitHash = null;
+    try {
+      const userId = req.user?.userId;
+      let githubAccessToken = null;
+      if (userId) {
+        const user = await User.findOne({ userId }).select('githubAccessToken').lean();
+        githubAccessToken = user?.githubAccessToken || null;
+      }
+      const lastCommit = await fetchLastGitHubCommitInfo(GIT_REPOSITORY__URL, githubAccessToken);
+      if (lastCommit) {
+        lastCommitMessage = lastCommit.message;
+        lastCommitHash = lastCommit.hash;
+      }
+    } catch (commitErr) {
+      console.warn('Failed to fetch last commit info:', commitErr?.message ?? String(commitErr));
+    }
+
     // Persist or upsert the project record with initial details
     const expectedDeployUrl = `https://${PROJECT_ID}.${config.APP_DOMAIN}`;
     await Project.findOneAndUpdate(
@@ -109,6 +160,8 @@ async function createProject(req, res) {
         gitRepositoryUrl: GIT_REPOSITORY__URL,
         deployUrl: expectedDeployUrl,
         status: 'queued',
+        lastCommitHash: lastCommitHash,
+        lastCommitMessage: lastCommitMessage,
         owner: {
           id: req.user?.id || null,
           userId: req.user?.userId || null,
