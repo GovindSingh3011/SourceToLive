@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-route
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import CreateProject from './pages/CreateProject'
+import Dashboard from './pages/Dashboard'
 import BackgroundPattern from './components/BackgroundPattern'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -17,6 +18,7 @@ function AppContent() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create-project" element={<CreateProject />} />
         </Routes>
       </div>

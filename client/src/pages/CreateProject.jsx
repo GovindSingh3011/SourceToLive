@@ -25,12 +25,30 @@ function CreateProject() {
         }
     }, [])
 
+    const token = localStorage.getItem('token')
+    const isAuthenticated = Boolean(token && user)
+
+    useEffect(() => {
+        const storedUser = localStorage.getItem('user')
+        const storedToken = localStorage.getItem('token')
+        if (!storedUser || !storedToken) {
+            navigate('/login')
+        }
+    }, [navigate])
+
     const handleGitUrlContinue = (url) => {
         setGitUrl(url)
         setStep(2)
     }
 
     const handleProjectDetailsDeploy = async (config) => {
+        if (!isAuthenticated) {
+            setError('Please log in to create a project')
+            return
+        }
+
+        const ownerName = user?.name || [user?.firstName, user?.lastName].filter(Boolean).join(' ').trim()
+        const configWithOwner = { ...config, ownerName }
         setStep(3)
         setIsDeploying(true)
         setError('')
@@ -43,7 +61,6 @@ function CreateProject() {
             }
 
             // Add auth token if user is logged in
-            const token = localStorage.getItem('token')
             if (token) {
                 headers['Authorization'] = `Bearer ${token}`
             }
@@ -57,6 +74,7 @@ function CreateProject() {
                     INSTALL_CMD: config.installCmd,
                     BUILD_CMD: config.buildCmd,
                     BUILD_ROOT: config.buildRoot,
+                    OWNER_NAME: ownerName,
                 }),
             })
 
@@ -67,7 +85,7 @@ function CreateProject() {
 
             const data = await response.json()
             setDeploymentUrl(data.data?.url || '')
-            setProjectConfig(config)
+            setProjectConfig(configWithOwner)
 
             // Add initial success message
             setLogs([{
@@ -138,88 +156,92 @@ function CreateProject() {
 
     return (
         <div className="bg-linear-to-br flex flex-col items-center justify-start relative w-full overflow-x-hidden px-3 sm:px-6">
-            {/* Progress Indicator */}
-            <div
-                className="w-full max-w-4xl mt-8 sm:mt-10 mb-6 sm:mb-8 bg-white/80 backdrop-blur-xl border-2 border-transparent bg-clip-padding rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] px-4 sm:px-8 py-5 sm:py-6 mx-auto"
-                style={{
-                    backgroundImage: 'linear-gradient(white, white), linear-gradient(135deg, rgba(59, 125, 195, 0.15), rgba(76, 175, 80, 0.15))',
-                    backgroundOrigin: 'padding-box, border-box',
-                    backgroundClip: 'padding-box, border-box'
-                }}
-            >
-                <div className="flex justify-center items-center gap-4 sm:gap-6">
-                    <div className={`flex flex-col items-center gap-2 transition-all ${step >= 1 ? '' : 'opacity-50'}`}>
-                        <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full border-2 flex items-center justify-center font-bold text-base sm:text-lg transition-all ${step >= 1
-                            ? 'bg-linear-to-r from-[#3B7DC3] to-[#2A5F99] border-[#2A5F99] text-white shadow-lg'
-                            : 'bg-gray-100 border-gray-200 text-gray-600'
-                            }`}>
-                            1
+            {isAuthenticated && (
+                <>
+                    {/* Progress Indicator */}
+                    <div
+                        className="w-full max-w-4xl mt-8 sm:mt-10 mb-6 sm:mb-8 bg-white/80 backdrop-blur-xl border-2 border-transparent bg-clip-padding rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] px-4 sm:px-8 py-5 sm:py-6 mx-auto"
+                        style={{
+                            backgroundImage: 'linear-gradient(white, white), linear-gradient(135deg, rgba(59, 125, 195, 0.15), rgba(76, 175, 80, 0.15))',
+                            backgroundOrigin: 'padding-box, border-box',
+                            backgroundClip: 'padding-box, border-box'
+                        }}
+                    >
+                        <div className="flex justify-center items-center gap-4 sm:gap-6">
+                            <div className={`flex flex-col items-center gap-2 transition-all ${step >= 1 ? '' : 'opacity-50'}`}>
+                                <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full border-2 flex items-center justify-center font-bold text-base sm:text-lg transition-all ${step >= 1
+                                    ? 'bg-linear-to-r from-[#3B7DC3] to-[#2A5F99] border-[#2A5F99] text-white shadow-lg'
+                                    : 'bg-gray-100 border-gray-200 text-gray-600'
+                                    }`}>
+                                    1
+                                </div>
+                                <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-widest ${step >= 1 ? 'text-[#2A5F99]' : 'text-gray-500'}`}>
+                                    Repository
+                                </span>
+                            </div>
+
+                            <div className={`w-10 sm:w-16 h-0.5 transition-all ${step >= 2 ? 'bg-gray-300' : 'bg-gray-200'}`}></div>
+
+                            <div className={`flex flex-col items-center gap-2 transition-all ${step >= 2 ? '' : 'opacity-50'}`}>
+                                <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full border-2 flex items-center justify-center font-bold text-base sm:text-lg transition-all ${step >= 2
+                                    ? 'bg-linear-to-r from-[#3B7DC3] to-[#2A5F99] border-[#2A5F99] text-white shadow-lg'
+                                    : 'bg-gray-100 border-gray-200 text-gray-600'
+                                    }`}>
+                                    2
+                                </div>
+                                <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-widest ${step >= 2 ? 'text-[#2A5F99]' : 'text-gray-500'}`}>
+                                    Configuration
+                                </span>
+                            </div>
+
+                            <div className={`w-10 sm:w-16 h-0.5 transition-all ${step >= 3 ? 'bg-gray-300' : 'bg-gray-200'}`}></div>
+
+                            <div className={`flex flex-col items-center gap-2 transition-all ${step >= 3 ? '' : 'opacity-50'}`}>
+                                <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full border-2 flex items-center justify-center font-bold text-base sm:text-lg transition-all ${step >= 3
+                                    ? 'bg-linear-to-r from-[#3B7DC3] to-[#2A5F99] border-[#2A5F99] text-white shadow-lg'
+                                    : 'bg-gray-100 border-gray-200 text-gray-600'
+                                    }`}>
+                                    3
+                                </div>
+                                <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-widest ${step >= 3 ? 'text-[#2A5F99]' : 'text-gray-500'}`}>
+                                    Deploy
+                                </span>
+                            </div>
                         </div>
-                        <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-widest ${step >= 1 ? 'text-[#2A5F99]' : 'text-gray-500'}`}>
-                            Repository
-                        </span>
                     </div>
 
-                    <div className={`w-10 sm:w-16 h-0.5 transition-all ${step >= 2 ? 'bg-gray-300' : 'bg-gray-200'}`}></div>
+                    {/* Main Content */}
+                    <div className="flex w-full max-w-5xl mx-auto pb-10 min-w-0">
+                        {step === 1 && (
+                            <GitURLInput
+                                onContinue={handleGitUrlContinue}
+                                isLoading={false}
+                            />
+                        )}
 
-                    <div className={`flex flex-col items-center gap-2 transition-all ${step >= 2 ? '' : 'opacity-50'}`}>
-                        <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full border-2 flex items-center justify-center font-bold text-base sm:text-lg transition-all ${step >= 2
-                            ? 'bg-linear-to-r from-[#3B7DC3] to-[#2A5F99] border-[#2A5F99] text-white shadow-lg'
-                            : 'bg-gray-100 border-gray-200 text-gray-600'
-                            }`}>
-                            2
-                        </div>
-                        <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-widest ${step >= 2 ? 'text-[#2A5F99]' : 'text-gray-500'}`}>
-                            Configuration
-                        </span>
+                        {step === 2 && (
+                            <ProjectDetails
+                                gitUrl={gitUrl}
+                                onDeploy={handleProjectDetailsDeploy}
+                                onBack={handleBackToGitUrl}
+                                isLoading={false}
+                            />
+                        )}
+
+                        {step === 3 && (
+                            <DeploymentLogs
+                                projectId={projectConfig?.projectId}
+                                isDeploying={isDeploying}
+                                logs={logs}
+                                deploymentUrl={deploymentUrl}
+                                error={error}
+                                projectConfig={projectConfig}
+                                gitUrl={gitUrl}
+                            />
+                        )}
                     </div>
-
-                    <div className={`w-10 sm:w-16 h-0.5 transition-all ${step >= 3 ? 'bg-gray-300' : 'bg-gray-200'}`}></div>
-
-                    <div className={`flex flex-col items-center gap-2 transition-all ${step >= 3 ? '' : 'opacity-50'}`}>
-                        <div className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full border-2 flex items-center justify-center font-bold text-base sm:text-lg transition-all ${step >= 3
-                            ? 'bg-linear-to-r from-[#3B7DC3] to-[#2A5F99] border-[#2A5F99] text-white shadow-lg'
-                            : 'bg-gray-100 border-gray-200 text-gray-600'
-                            }`}>
-                            3
-                        </div>
-                        <span className={`text-[10px] sm:text-xs font-bold uppercase tracking-widest ${step >= 3 ? 'text-[#2A5F99]' : 'text-gray-500'}`}>
-                            Deploy
-                        </span>
-                    </div>
-                </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="flex w-full max-w-5xl mx-auto pb-10 min-w-0">
-                {step === 1 && (
-                    <GitURLInput
-                        onContinue={handleGitUrlContinue}
-                        isLoading={false}
-                    />
-                )}
-
-                {step === 2 && (
-                    <ProjectDetails
-                        gitUrl={gitUrl}
-                        onDeploy={handleProjectDetailsDeploy}
-                        onBack={handleBackToGitUrl}
-                        isLoading={false}
-                    />
-                )}
-
-                {step === 3 && (
-                    <DeploymentLogs
-                        projectId={projectConfig?.projectId}
-                        isDeploying={isDeploying}
-                        logs={logs}
-                        deploymentUrl={deploymentUrl}
-                        error={error}
-                        projectConfig={projectConfig}
-                        gitUrl={gitUrl}
-                    />
-                )}
-            </div>
+                </>
+            )}
         </div>
     )
 }
