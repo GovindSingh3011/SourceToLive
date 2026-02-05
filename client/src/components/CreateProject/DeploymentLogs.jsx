@@ -11,32 +11,32 @@ function DeploymentLogs({ projectId, isDeploying, logs, deploymentUrl, error, pr
     }, [logs])
 
     return (
-        <div className="flex justify-center w-full px-4 py-6 animate-in fade-in slide-in-from-bottom-5 duration-300">
+        <div className="flex justify-center w-full px-3 sm:px-4 py-4 sm:py-6 animate-in fade-in slide-in-from-bottom-5 duration-300">
             <div className="w-full max-w-5xl">
                 {/* Main Card */}
                 <div
-                    className="bg-white/95 backdrop-blur-xl border border-gray-200 rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.1)] p-8 md:p-10"
+                    className="bg-white/95 backdrop-blur-xl border border-gray-200 rounded-2xl sm:rounded-3xl shadow-[0_20px_60px_rgba(0,0,0,0.1)] p-5 sm:p-8 md:p-10"
                     style={{
                         backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.9), rgba(249,250,251,0.9))',
                     }}
                 >
                     {/* Header Section */}
-                    <div className="mb-8">
-                        <div className="flex items-center gap-4 mb-6">
-                            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-linear-to-br from-cyan-500 to-teal-600 text-white text-2xl">
-                                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="mb-6 sm:mb-8">
+                        <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                            <div className="inline-flex items-center justify-center w-12 sm:w-14 h-12 sm:h-14 rounded-xl sm:rounded-2xl bg-linear-to-br from-cyan-500 to-teal-600 text-white text-xl sm:text-2xl shrink-0">
+                                <svg className="w-6 sm:w-8 h-6 sm:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
                             </div>
                             <div>
-                                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 m-0">
+                                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 m-0">
                                     Deployment Progress
                                 </h2>
-                                <p className="text-gray-600 text-sm mt-1">Step 3 of 3</p>
+                                <p className="text-gray-600 text-xs sm:text-sm mt-0.5 sm:mt-1">Step 3 of 3</p>
                             </div>
                         </div>
-                        <p className="text-gray-600 text-sm leading-relaxed">Monitor your deployment in real-time with live build logs and status updates</p>
-                        <div className="h-px bg-linear-to-r from-gray-200 via-gray-200 to-transparent mt-6"></div>
+                        <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">Monitor your deployment in real-time with live build logs and status updates</p>
+                        <div className="h-px bg-linear-to-r from-gray-200 via-gray-200 to-transparent mt-4 sm:mt-6"></div>
                     </div>
 
                     {/* Error Banner */}
@@ -52,49 +52,49 @@ function DeploymentLogs({ projectId, isDeploying, logs, deploymentUrl, error, pr
 
                     {/* Project Info Cards */}
                     {(logs.length > 0 || isDeploying || projectConfig) && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
                             {/* Project Name Card */}
-                            <div className="bg-linear-to-br from-blue-50 to-blue-50/50 border border-blue-200 rounded-2xl p-5 hover:shadow-md transition-shadow">
+                            <div className="bg-linear-to-br from-blue-50 to-blue-50/50 border border-blue-200 rounded-2xl p-4 sm:p-5 hover:shadow-md transition-shadow">
                                 <p className="text-blue-600 text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
                                     <span className="inline-block w-1.5 h-1.5 rounded-full bg-blue-500"></span>
                                     Project Name
                                 </p>
-                                <p className="text-gray-900 font-semibold text-lg break-all">{projectConfig?.projectId || gitUrl?.split('/').slice(-1)[0] || projectId || 'N/A'}</p>
+                                <p className="text-gray-900 font-semibold text-base sm:text-lg break-all">{projectConfig?.projectId || gitUrl?.split('/').slice(-1)[0] || projectId || 'N/A'}</p>
                             </div>
 
                             {/* Deploy Status Card */}
-                            <div className="bg-linear-to-br from-indigo-50 to-indigo-50/50 border border-indigo-200 rounded-2xl p-5 hover:shadow-md transition-shadow">
+                            <div className="bg-linear-to-br from-indigo-50 to-indigo-50/50 border border-indigo-200 rounded-2xl p-4 sm:p-5 hover:shadow-md transition-shadow">
                                 <p className="text-indigo-600 text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
                                     <span className="inline-block w-1.5 h-1.5 rounded-full bg-indigo-500"></span>
                                     Deployment Status
                                 </p>
                                 <div className="flex gap-3 items-center">
-                                    {isDeploying && <span className="inline-flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></span><span className="text-indigo-700 text-base font-semibold">In Progress</span></span>}
-                                    {!isDeploying && logs.length > 0 && !error && <span className="inline-flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-green-500"></span><span className="text-green-600 text-base font-semibold">Completed</span></span>}
-                                    {error && <span className="inline-flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-red-500"></span><span className="text-red-600 text-base font-semibold">Failed</span></span>}
+                                    {isDeploying && <span className="inline-flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-blue-500 animate-pulse"></span><span className="text-indigo-700 text-sm sm:text-base font-semibold">In Progress</span></span>}
+                                    {!isDeploying && logs.length > 0 && !error && <span className="inline-flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-green-500"></span><span className="text-green-600 text-sm sm:text-base font-semibold">Completed</span></span>}
+                                    {error && <span className="inline-flex items-center gap-2"><span className="w-3 h-3 rounded-full bg-red-500"></span><span className="text-red-600 text-sm sm:text-base font-semibold">Failed</span></span>}
                                 </div>
                             </div>
 
                             {/* GitHub Repository Card */}
-                            <div className="bg-linear-to-br from-amber-50 to-amber-50/50 border border-amber-200 rounded-2xl p-5 hover:shadow-md transition-shadow md:col-span-1">
+                            <div className="bg-linear-to-br from-amber-50 to-amber-50/50 border border-amber-200 rounded-2xl p-4 sm:p-5 hover:shadow-md transition-shadow md:col-span-1">
                                 <p className="text-amber-600 text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
                                     <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-500"></span>
                                     GitHub Repository
                                 </p>
-                                <a href={gitUrl} target="_blank" rel="noopener noreferrer" className="text-amber-700 hover:text-amber-900 text-base font-mono font-semibold break-all underline hover:no-underline transition-colors">
+                                <a href={gitUrl} target="_blank" rel="noopener noreferrer" className="text-amber-700 hover:text-amber-900 text-sm sm:text-base font-mono font-semibold break-all underline hover:no-underline transition-colors">
                                     {gitUrl?.split('/').slice(-2).join('/') || 'N/A'}
                                 </a>
                             </div>
 
                             {/* Live URL Card */}
                             {deploymentUrl && (
-                                <div className="bg-linear-to-br from-emerald-50 to-emerald-50/50 border border-emerald-200 rounded-2xl p-5 hover:shadow-md transition-shadow md:col-span-1">
+                                <div className="bg-linear-to-br from-emerald-50 to-emerald-50/50 border border-emerald-200 rounded-2xl p-4 sm:p-5 hover:shadow-md transition-shadow md:col-span-1">
                                     <p className="text-emerald-600 text-xs font-bold uppercase tracking-widest mb-3 flex items-center gap-2">
                                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
                                         Live URL
                                     </p>
                                     <div className="flex gap-3 items-start sm:items-center flex-col sm:flex-row">
-                                        <a href={deploymentUrl} target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:text-emerald-900 text-base font-mono font-semibold break-all underline hover:no-underline transition-colors flex-1">
+                                        <a href={deploymentUrl} target="_blank" rel="noopener noreferrer" className="text-emerald-700 hover:text-emerald-900 text-sm sm:text-base font-mono font-semibold break-all underline hover:no-underline transition-colors flex-1">
                                             {deploymentUrl?.split('://')[1]?.split('/')[0] || 'N/A'}
                                         </a>
                                         <button
@@ -113,7 +113,7 @@ function DeploymentLogs({ projectId, isDeploying, logs, deploymentUrl, error, pr
                     )}
 
                     {/* Logs Container */}
-                    <div className="bg-slate-950 border border-slate-800 rounded-2xl p-6 mb-6 min-h-80 max-h-96 overflow-hidden flex flex-col shadow-2xl">
+                    <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 sm:p-6 mb-5 sm:mb-6 min-h-72 sm:min-h-80 max-h-80 sm:max-h-96 overflow-hidden flex flex-col shadow-2xl">
                         {logs.length === 0 ? (
                             <div className="flex flex-col items-center justify-center h-full text-slate-400 text-center">
                                 <div className="mb-4">
@@ -200,7 +200,7 @@ function DeploymentLogs({ projectId, isDeploying, logs, deploymentUrl, error, pr
 
                     {/* Success Message */}
                     {!isDeploying && logs.length > 0 && !deploymentUrl && !error && (
-                        <div className="bg-linear-to-r from-blue-50 to-blue-50 border border-blue-300 rounded-2xl p-5 text-blue-900 text-sm animate-in slide-in-from-bottom-2 duration-300">
+                        <div className="bg-linear-to-r from-blue-50 to-blue-50 border border-blue-300 rounded-2xl p-4 sm:p-5 text-blue-900 text-xs sm:text-sm animate-in slide-in-from-bottom-2 duration-300">
                             <p className="m-0 flex items-start gap-3">
                                 <span className="text-lg shrink-0 mt-0.5">ℹ️</span>
                                 <span className="leading-relaxed">Deployment logs streamed successfully. Check your live URL in the deployment info above.</span>

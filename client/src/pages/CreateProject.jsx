@@ -137,10 +137,10 @@ function CreateProject() {
     }
 
     return (
-        <div className="min-h-screen bg-linear-to-br flex flex-col items-center justify-start relative px-4 sm:px-6">
+        <div className="bg-linear-to-br flex flex-col items-center justify-start relative w-full overflow-x-hidden px-3 sm:px-6">
             {/* Progress Indicator */}
             <div
-                className="w-full max-w-4xl mt-8 sm:mt-10 mb-6 sm:mb-8 bg-white/80 backdrop-blur-xl border-2 border-transparent bg-clip-padding rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] px-6 sm:px-8 py-5 sm:py-6"
+                className="w-full max-w-4xl mt-8 sm:mt-10 mb-6 sm:mb-8 bg-white/80 backdrop-blur-xl border-2 border-transparent bg-clip-padding rounded-2xl shadow-[0_8px_32px_rgba(0,0,0,0.08)] px-4 sm:px-8 py-5 sm:py-6 mx-auto"
                 style={{
                     backgroundImage: 'linear-gradient(white, white), linear-gradient(135deg, rgba(59, 125, 195, 0.15), rgba(76, 175, 80, 0.15))',
                     backgroundOrigin: 'padding-box, border-box',
@@ -191,7 +191,7 @@ function CreateProject() {
             </div>
 
             {/* Main Content */}
-            <div className="flex w-full max-w-5xl mx-auto pb-10">
+            <div className="flex w-full max-w-5xl mx-auto pb-10 min-w-0">
                 {step === 1 && (
                     <GitURLInput
                         onContinue={handleGitUrlContinue}
