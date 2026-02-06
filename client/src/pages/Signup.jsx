@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useRef, useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 const Logo = '/S2L.svg';
@@ -23,6 +23,13 @@ const Signup = () => {
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
     const otpRefs = useRef([]);
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            navigate('/dashboard');
+        }
+    }, [navigate]);
 
     const handleChange = (e) => {
         setFormData({
