@@ -139,7 +139,7 @@ const Navbar = () => {
                                     to="/login"
                                     className="px-4 py-2 text-sm font-semibold text-gray-700 hover:text-[#3B7DC3] transition-colors"
                                 >
-                                    Sign In
+                                    Log In
                                 </Link>
                                 <Link
                                     to="/signup"
