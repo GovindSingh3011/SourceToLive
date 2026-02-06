@@ -231,10 +231,10 @@ function Profile() {
 
                 {/* Tabs */}
                 <div className="mb-8">
-                    <div className="flex gap-2 border-b border-gray-200">
+                    <div className="flex gap-2 border-b border-gray-200 overflow-x-auto">
                         <button
                             onClick={() => setActiveTab('account')}
-                            className={`px-4 py-3 font-semibold text-sm border-b-2 transition-colors ${activeTab === 'account'
+                            className={`px-3 sm:px-4 py-3 font-semibold text-xs sm:text-sm border-b-2 transition-colors whitespace-nowrap ${activeTab === 'account'
                                 ? 'border-blue-500 text-blue-600'
                                 : 'border-transparent text-gray-600 hover:text-gray-900'
                                 }`}
@@ -243,12 +243,13 @@ function Profile() {
                                 <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                                 </svg>
-                                Account
+                                <span className="hidden sm:inline">Account</span>
+                                <span className="sm:hidden">Profile</span>
                             </span>
                         </button>
                         <button
                             onClick={() => setActiveTab('github')}
-                            className={`px-4 py-3 font-semibold text-sm border-b-2 transition-colors ${activeTab === 'github'
+                            className={`px-3 sm:px-4 py-3 font-semibold text-xs sm:text-sm border-b-2 transition-colors whitespace-nowrap ${activeTab === 'github'
                                 ? 'border-blue-500 text-blue-600'
                                 : 'border-transparent text-gray-600 hover:text-gray-900'
                                 }`}
@@ -257,7 +258,8 @@ function Profile() {
                                 <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 16 16">
                                     <path d="M8 0C3.58 0 0 3.73 0 8.33c0 3.68 2.29 6.8 5.47 7.9.4.08.55-.18.55-.39 0-.2-.01-.73-.01-1.44-2.01.45-2.53-.9-2.69-1.3-.09-.23-.48-.94-.82-1.13-.28-.16-.68-.55-.01-.56.63-.01 1.08.6 1.23.85.72 1.25 1.87.9 2.33.69.07-.54.28-.9.51-1.11-1.78-.2-3.64-.92-3.64-4.09 0-.9.31-1.64.82-2.22-.08-.2-.36-1.03.08-2.15 0 0 .67-.22 2.2.85.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.07 2.2-.85 2.2-.85.44 1.12.16 1.95.08 2.15.51.58.82 1.32.82 2.22 0 3.18-1.87 3.88-3.65 4.08.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.47.55.39C13.71 15.13 16 12.01 16 8.33 16 3.73 12.42 0 8 0Z" />
                                 </svg>
-                                GitHub Integration
+                                <span className="hidden sm:inline">GitHub Integration</span>
+                                <span className="sm:hidden">GitHub</span>
                             </span>
                         </button>
                     </div>

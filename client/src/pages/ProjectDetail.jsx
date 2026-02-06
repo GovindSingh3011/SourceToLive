@@ -213,11 +213,11 @@ function ProjectDetail() {
                                     Project overview and deployment management
                                 </p>
                             </div>
-                            <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
+                            <div className="flex flex-col sm:flex-row gap-3 items-stretch sm:items-center">
                                 <button
                                     onClick={handleRedeploy}
                                     disabled={redeployLoading}
-                                    className="h-11 px-6 bg-linear-to-r from-gray-900 to-gray-800 hover:from-black hover:to-gray-900 disabled:from-gray-400 disabled:to-gray-400 text-white text-sm font-semibold rounded-xl cursor-pointer flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-xl hover:scale-105 disabled:hover:scale-100"
+                                    className="w-full sm:w-auto h-11 px-6 bg-linear-to-r from-gray-900 to-gray-800 hover:from-black hover:to-gray-900 disabled:from-gray-400 disabled:to-gray-400 text-white text-sm font-semibold rounded-xl cursor-pointer flex items-center justify-center gap-2 transition-all duration-200 shadow-md hover:shadow-xl hover:scale-105 disabled:hover:scale-100"
                                 >
                                     {redeployLoading ? (
                                         <>
@@ -240,7 +240,7 @@ function ProjectDetail() {
                                         href={project.gitRepositoryUrl}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="h-11 px-6 bg-white hover:bg-gray-50 border border-gray-200 text-gray-900 text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-200"
+                                        className="w-full sm:w-auto h-11 px-6 bg-white hover:bg-gray-50 border border-gray-200 text-gray-900 text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-200"
                                     >
                                         <svg className="h-4 w-4" viewBox="0 0 16 16" fill="currentColor">
                                             <path d="M8 0C3.58 0 0 3.73 0 8.33c0 3.68 2.29 6.8 5.47 7.9.4.08.55-.18.55-.39 0-.2-.01-.73-.01-1.44-2.01.45-2.53-.9-2.69-1.3-.09-.23-.48-.94-.82-1.13-.28-.16-.68-.55-.01-.56.63-.01 1.08.6 1.23.85.72 1.25 1.87.9 2.33.69.07-.54.28-.9.51-1.11-1.78-.2-3.64-.92-3.64-4.09 0-.9.31-1.64.82-2.22-.08-.2-.36-1.03.08-2.15 0 0 .67-.22 2.2.85.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.07 2.2-.85 2.2-.85.44 1.12.16 1.95.08 2.15.51.58.82 1.32.82 2.22 0 3.18-1.87 3.88-3.65 4.08.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.47.55.39C13.71 15.13 16 12.01 16 8.33 16 3.73 12.42 0 8 0Z" />
@@ -337,8 +337,53 @@ function ProjectDetail() {
                                 </div>
                             </div>
                         </div>
+                    </div>
 
-                        {/* Build Logs Card */}
+                    {/* Right Column - Status Info */}
+                    <div className="space-y-6">
+                        {/* Status Card */}
+                        <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-[0_8px_24px_rgba(17,24,39,0.08)] overflow-hidden group">
+                            <div className="absolute inset-0 bg-linear-to-br from-blue-50/50 via-purple-50/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                            <div className="relative px-6 py-6">
+                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">Deployment Status</p>
+                                <div className="flex items-center gap-3">
+                                    <div className={`h-3 w-3 rounded-full animate-pulse ${project.status?.toLowerCase() === 'success' || project.status?.toLowerCase() === 'finished' || project.status?.toLowerCase() === 'deployed'
+                                        ? 'bg-green-500'
+                                        : project.status?.toLowerCase() === 'failed'
+                                            ? 'bg-red-500'
+                                            : project.status?.toLowerCase() === 'building' || project.status?.toLowerCase() === 'running'
+                                                ? 'bg-yellow-500'
+                                                : 'bg-gray-400'
+                                        }`}></div>
+                                    <div>
+                                        <p className="text-gray-900 font-bold text-lg capitalize">{project.status || 'Unknown'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Timeline Card */}
+                        <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-[0_8px_24px_rgba(17,24,39,0.08)] overflow-hidden group">
+                            <div className="absolute inset-0 bg-linear-to-br from-blue-50/50 via-purple-50/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                            <div className="relative px-6 py-6 space-y-6">
+                                <div>
+                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Created At</p>
+                                    <p className="text-gray-900 font-semibold text-sm">
+                                        {formatDate(project.createdAt)}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Last Updated</p>
+                                    <p className="text-gray-900 font-semibold text-sm">
+                                        {formatDate(project.updatedAt || project.createdAt)}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Build Logs Card - Shows at end on mobile, after status on desktop */}
+                    <div className="lg:col-span-3">
                         <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-[0_8px_24px_rgba(17,24,39,0.08)] overflow-hidden group">
                             <div className="absolute inset-0 bg-linear-to-br from-blue-50/50 via-purple-50/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                             <div className="absolute inset-x-0 top-0 h-1 bg-linear-to-r from-purple-400/60 via-pink-400/40 to-transparent" />
@@ -350,20 +395,29 @@ function ProjectDetail() {
                                 >
                                     <div className="flex items-center gap-3">
                                         <div className="p-2 rounded-xl bg-purple-100/80">
-                                            <svg className="h-5 w-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
+                                            {logsLoading ? (
+                                                <svg className="h-5 w-5 text-purple-600 animate-spin" fill="none" viewBox="0 0 24 24">
+                                                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                </svg>
+                                            ) : (
+                                                <svg className="h-5 w-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                                </svg>
+                                            )}
                                         </div>
-                                        <h3 className="text-lg font-bold text-gray-900">Build Logs</h3>
+                                        <h3 className="text-lg font-bold text-gray-900">{logsLoading ? 'Loading Logs...' : 'Build Logs'}</h3>
                                     </div>
-                                    <svg
-                                        className={`h-5 w-5 text-gray-400 transition-transform duration-300 ${showLogs ? 'rotate-180' : ''}`}
-                                        fill="none"
-                                        stroke="currentColor"
-                                        viewBox="0 0 24 24"
-                                    >
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                                    </svg>
+                                    {!logsLoading && (
+                                        <svg
+                                            className={`h-5 w-5 text-gray-400 transition-transform duration-300 ${showLogs ? 'rotate-180' : ''}`}
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                                        </svg>
+                                    )}
                                 </button>
 
                                 {showLogs && (
@@ -428,49 +482,6 @@ function ProjectDetail() {
                                         )}
                                     </div>
                                 )}
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Right Column - Status Info */}
-                    <div className="space-y-6">
-                        {/* Status Card */}
-                        <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-[0_8px_24px_rgba(17,24,39,0.08)] overflow-hidden group">
-                            <div className="absolute inset-0 bg-linear-to-br from-blue-50/50 via-purple-50/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                            <div className="relative px-6 py-6">
-                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">Deployment Status</p>
-                                <div className="flex items-center gap-3">
-                                    <div className={`h-3 w-3 rounded-full animate-pulse ${project.status?.toLowerCase() === 'success' || project.status?.toLowerCase() === 'finished' || project.status?.toLowerCase() === 'deployed'
-                                        ? 'bg-green-500'
-                                        : project.status?.toLowerCase() === 'failed'
-                                            ? 'bg-red-500'
-                                            : project.status?.toLowerCase() === 'building' || project.status?.toLowerCase() === 'running'
-                                                ? 'bg-yellow-500'
-                                                : 'bg-gray-400'
-                                        }`}></div>
-                                    <div>
-                                        <p className="text-gray-900 font-bold text-lg capitalize">{project.status || 'Unknown'}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Timeline Card */}
-                        <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-[0_8px_24px_rgba(17,24,39,0.08)] overflow-hidden group">
-                            <div className="absolute inset-0 bg-linear-to-br from-blue-50/50 via-purple-50/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                            <div className="relative px-6 py-6 space-y-6">
-                                <div>
-                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Created At</p>
-                                    <p className="text-gray-900 font-semibold text-sm">
-                                        {formatDate(project.createdAt)}
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Last Updated</p>
-                                    <p className="text-gray-900 font-semibold text-sm">
-                                        {formatDate(project.updatedAt || project.createdAt)}
-                                    </p>
-                                </div>
                             </div>
                         </div>
                     </div>

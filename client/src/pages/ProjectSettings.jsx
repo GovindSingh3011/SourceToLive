@@ -394,7 +394,7 @@ function ProjectSettings() {
                                     </div>
 
                                     <div>
-                                        <div className="flex items-center justify-between p-4 rounded-xl bg-gray-50 border border-gray-200">
+                                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-xl bg-gray-50 border border-gray-200">
                                             <div className="flex-1">
                                                 <label className="block text-sm font-semibold text-gray-900 mb-1">Auto Redeploy on Git Push</label>
                                                 <p className="text-xs text-gray-600">Automatically redeploy when changes are pushed to the repository</p>
@@ -402,7 +402,7 @@ function ProjectSettings() {
                                             <button
                                                 onClick={handleAutoRedeployChange}
                                                 disabled={isSaving}
-                                                className={`relative inline-flex h-8 w-14 items-center justify-start rounded-full transition-colors ml-4 shrink-0 ${formData.autoRedeploy ? 'bg-emerald-500' : 'bg-gray-300'
+                                                className={`relative inline-flex h-8 w-14 items-center justify-start rounded-full transition-colors shrink-0 ${formData.autoRedeploy ? 'bg-emerald-500' : 'bg-gray-300'
                                                     } ${isSaving ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-90'}`}
                                             >
                                                 <span
@@ -444,7 +444,7 @@ function ProjectSettings() {
                                     />
                                     <p className="text-xs text-gray-500 mt-2">Your GitHub repository URL</p>
                                     {editingField === 'gitRepositoryUrl' && (
-                                        <div className="mt-3 flex gap-2">
+                                        <div className="mt-3 flex flex-col sm:flex-row gap-2">
                                             <button
                                                 onClick={() => handleSaveField('gitRepositoryUrl')}
                                                 disabled={isSaving}
@@ -493,7 +493,7 @@ function ProjectSettings() {
                                         />
                                         <p className="text-xs text-gray-500 mt-2">Directory relative to repo root where your code is located</p>
                                         {editingField === 'rootDirectory' && (
-                                            <div className="mt-3 flex gap-2">
+                                            <div className="mt-3 flex flex-col sm:flex-row gap-2">
                                                 <button
                                                     onClick={() => handleSaveField('rootDirectory')}
                                                     disabled={isSaving}
@@ -523,7 +523,7 @@ function ProjectSettings() {
                                         />
                                         <p className="text-xs text-gray-500 mt-2">Command to install dependencies (npm install, yarn install, etc)</p>
                                         {editingField === 'installCommand' && (
-                                            <div className="mt-3 flex gap-2">
+                                            <div className="mt-3 flex flex-col sm:flex-row gap-2">
                                                 <button
                                                     onClick={() => handleSaveField('installCommand')}
                                                     disabled={isSaving}
@@ -553,7 +553,7 @@ function ProjectSettings() {
                                         />
                                         <p className="text-xs text-gray-500 mt-2">Command to build your project (npm run build, npm run build:prod, etc)</p>
                                         {editingField === 'buildCommand' && (
-                                            <div className="mt-3 flex gap-2">
+                                            <div className="mt-3 flex flex-col sm:flex-row gap-2">
                                                 <button
                                                     onClick={() => handleSaveField('buildCommand')}
                                                     disabled={isSaving}
@@ -697,7 +697,7 @@ function ProjectSettings() {
                                 </div>
                             )}
 
-                            <div className="flex gap-3">
+                            <div className="flex flex-col sm:flex-row gap-3">
                                 <button
                                     onClick={() => {
                                         setShowDeleteModal(false)
