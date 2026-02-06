@@ -315,17 +315,19 @@ function ProjectDetail() {
                                     <h3 className="text-lg font-bold text-gray-900">Source</h3>
                                 </div>
                                 <div className="space-y-4">
-                                    <div>
-                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Repository</p>
-                                        <p className="text-gray-900 font-semibold">{getRepoDisplay(project.gitRepositoryUrl)}</p>
-                                    </div>
-                                    <div>
-                                        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Branch</p>
-                                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 text-xs font-semibold">
-                                            <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h10a2 2 0 002-2v-5.5a2.5 2.5 0 00-5 0V15a2 2 0 002 2z" />
-                                            </svg>
-                                            {project.defaultBranch || project.branchName || project.branch || 'main'}
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Repository</p>
+                                            <p className="text-gray-900 font-semibold break-all">{getRepoDisplay(project.gitRepositoryUrl)}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Branch</p>
+                                            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-100 text-gray-700 text-xs font-semibold">
+                                                <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h10a2 2 0 002-2v-5.5a2.5 2.5 0 00-5 0V15a2 2 0 002 2z" />
+                                                </svg>
+                                                {project.defaultBranch || project.branchName || project.branch || 'main'}
+                                            </div>
                                         </div>
                                     </div>
                                     {project.lastCommitMessage && (
@@ -344,19 +346,30 @@ function ProjectDetail() {
                         {/* Status Card */}
                         <div className="relative bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-[0_8px_24px_rgba(17,24,39,0.08)] overflow-hidden group">
                             <div className="absolute inset-0 bg-linear-to-br from-blue-50/50 via-purple-50/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                            <div className="relative px-6 py-6">
-                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">Deployment Status</p>
-                                <div className="flex items-center gap-3">
-                                    <div className={`h-3 w-3 rounded-full animate-pulse ${project.status?.toLowerCase() === 'success' || project.status?.toLowerCase() === 'finished' || project.status?.toLowerCase() === 'deployed'
-                                        ? 'bg-green-500'
-                                        : project.status?.toLowerCase() === 'failed'
-                                            ? 'bg-red-500'
-                                            : project.status?.toLowerCase() === 'building' || project.status?.toLowerCase() === 'running'
-                                                ? 'bg-yellow-500'
-                                                : 'bg-gray-400'
-                                        }`}></div>
-                                    <div>
-                                        <p className="text-gray-900 font-bold text-lg capitalize">{project.status || 'Unknown'}</p>
+                            <div className="relative px-6 py-6 space-y-6">
+                                <div>
+                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">Deployment Status</p>
+                                    <div className="flex items-center gap-3">
+                                        <div className={`h-3 w-3 rounded-full animate-pulse ${project.status?.toLowerCase() === 'success' || project.status?.toLowerCase() === 'finished' || project.status?.toLowerCase() === 'deployed'
+                                            ? 'bg-green-500'
+                                            : project.status?.toLowerCase() === 'failed'
+                                                ? 'bg-red-500'
+                                                : project.status?.toLowerCase() === 'building' || project.status?.toLowerCase() === 'running'
+                                                    ? 'bg-yellow-500'
+                                                    : 'bg-gray-400'
+                                            }`}></div>
+                                        <div>
+                                            <p className="text-gray-900 font-bold text-lg capitalize">{project.status || 'Unknown'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Auto Redeploy</p>
+                                    <div className="flex items-center gap-2">
+                                        <div className={`h-2 w-2 rounded-full ${project.autoRedeploy ? 'bg-green-500' : 'bg-gray-400'}`}></div>
+                                        <p className="text-gray-900 font-semibold text-sm">
+                                            {project.autoRedeploy ? 'Enabled' : 'Disabled'}
+                                        </p>
                                     </div>
                                 </div>
                             </div>
