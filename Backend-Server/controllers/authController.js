@@ -370,6 +370,7 @@ const getOTPForEmail = async (req, res) => {
 const initiateGitHubOAuth = async (req, res) => {
     try {
         const userId = req.user?.userId;
+        const { returnTo } = req.query; // Optional parameter for redirect after auth
 
         if (!config.GITHUB_CLIENT_ID) {
             return res.status(500).json({
@@ -380,12 +381,19 @@ const initiateGitHubOAuth = async (req, res) => {
         // Required scopes for webhook creation and repo access
         const scopes = ['repo', 'admin:repo_hook'].join(' ');
 
+        // Encode state with userId and optional returnTo
+        const stateData = {
+            userId: userId || null,
+            returnTo: returnTo || '/add-project'
+        };
+        const state = Buffer.from(JSON.stringify(stateData)).toString('base64');
+
         // Build GitHub OAuth URL
         const githubAuthUrl = new URL('https://github.com/login/oauth/authorize');
         githubAuthUrl.searchParams.append('client_id', config.GITHUB_CLIENT_ID);
         githubAuthUrl.searchParams.append('redirect_uri', config.GITHUB_CALLBACK_URL);
         githubAuthUrl.searchParams.append('scope', scopes);
-        githubAuthUrl.searchParams.append('state', userId ? userId.toString() : '');
+        githubAuthUrl.searchParams.append('state', state);
         // Force user to login again and select account (doesn't auto-connect to previous login)
         githubAuthUrl.searchParams.append('prompt', 'consent');
 
@@ -410,11 +418,29 @@ const handleGitHubCallback = async (req, res) => {
         const { code, state } = req.query;
 
         if (!code) {
-            return res.redirect(`${config.FRONTEND_URL}/settings?error=No authorization code received`);
+            return res.redirect(`${config.FRONTEND_URL}/profile?error=No authorization code received`);
         }
 
         if (!config.GITHUB_CLIENT_ID || !config.GITHUB_CLIENT_SECRET) {
-            return res.redirect(`${config.FRONTEND_URL}/settings?error=GitHub OAuth not configured`);
+            return res.redirect(`${config.FRONTEND_URL}/profile?error=GitHub OAuth not configured`);
+        }
+
+        // Decode state to get userId and returnTo
+        let userId = null;
+        let returnTo = '/add-project';
+        try {
+            if (state) {
+                const decodedState = JSON.parse(Buffer.from(state, 'base64').toString('utf8'));
+                userId = decodedState.userId;
+                returnTo = decodedState.returnTo || '/add-project';
+            }
+        } catch (e) {
+            console.error('Failed to decode state:', e);
+            return res.redirect(`${config.FRONTEND_URL}/profile?error=Invalid state parameter`);
+        }
+
+        if (!userId) {
+            return res.redirect(`${config.FRONTEND_URL}/profile?error=User not authenticated`);
         }
 
         // Exchange code for access token
@@ -435,7 +461,7 @@ const handleGitHubCallback = async (req, res) => {
         const tokenData = await tokenResponse.json();
 
         if (tokenData.error || !tokenData.access_token) {
-            return res.redirect(`${config.FRONTEND_URL}/settings?error=${encodeURIComponent(tokenData.error_description || 'Failed to get access token')}`);
+            return res.redirect(`${config.FRONTEND_URL}${returnTo}?error=${encodeURIComponent(tokenData.error_description || 'Failed to get access token')}`);
         }
 
         const accessToken = tokenData.access_token;
@@ -449,17 +475,10 @@ const handleGitHubCallback = async (req, res) => {
         });
 
         if (!userResponse.ok) {
-            return res.redirect(`${config.FRONTEND_URL}/settings?error=Failed to verify GitHub token`);
+            return res.redirect(`${config.FRONTEND_URL}${returnTo}?error=Failed to verify GitHub token`);
         }
 
         const githubUser = await userResponse.json();
-
-        // Get user from state (userId)
-        const userId = state ? parseInt(state) : null;
-
-        if (!userId) {
-            return res.redirect(`${config.FRONTEND_URL}/settings?error=User not authenticated`);
-        }
 
         // Save token to user
         await User.findOneAndUpdate(
@@ -467,12 +486,12 @@ const handleGitHubCallback = async (req, res) => {
             { githubAccessToken: accessToken }
         );
 
-        // Redirect back to add-project with success
-        return res.redirect(`${config.FRONTEND_URL}/add-project?github_connected=true`);
+        // Redirect back to the specified returnTo path with success message
+        return res.redirect(`${config.FRONTEND_URL}${returnTo}?github_connected=true`);
 
     } catch (error) {
         console.error('GitHub OAuth callback error:', error);
-        return res.redirect(`${config.FRONTEND_URL}/add-project?error=${encodeURIComponent(error.message)}`);
+        return res.redirect(`${config.FRONTEND_URL}/profile?error=${encodeURIComponent(error.message)}`);
     }
 };
 

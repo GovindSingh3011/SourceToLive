@@ -4,6 +4,7 @@ const { S3Client, PutObjectCommand, GetObjectCommand, ListObjectsV2Command } = r
 const config = require('../config');
 const Project = require('../models/Project');
 const User = require('../models/User');
+const { createGitHubWebhook } = require('./webhookController');
 
 const ecsClient = new ECSClient({ region: config.AWS_REGION });
 const logsClient = new CloudWatchLogsClient({ region: config.AWS_REGION });
@@ -558,4 +559,226 @@ async function redeploy(req, res) {
   }
 }
 
-module.exports = { createProject, streamLogs, listProjects, getProject, getArchivedLogs, redeploy };
+/**
+ * PUT /project/:projectId
+ * Update project settings
+ */
+async function updateProject(req, res) {
+  try {
+    const { projectId } = req.params;
+    const { gitRepositoryUrl, autoRedeploy, buildCommand, installCommand, rootDirectory } = req.body;
+
+    const project = await Project.findOne({ projectId });
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    // Update allowed fields
+    if (gitRepositoryUrl !== undefined) project.gitRepositoryUrl = gitRepositoryUrl;
+    if (autoRedeploy !== undefined) project.autoRedeploy = autoRedeploy;
+    if (buildCommand !== undefined) project.buildConfig.buildCmd = buildCommand;
+    if (installCommand !== undefined) project.buildConfig.installCmd = installCommand;
+    if (rootDirectory !== undefined) project.buildConfig.buildRoot = rootDirectory;
+
+    await project.save();
+
+    return res.json({
+      message: 'Project settings updated successfully',
+      project
+    });
+  } catch (error) {
+    console.error('Update project error:', error);
+    return res.status(500).json({
+      error: 'Failed to update project',
+      message: error?.message ?? String(error)
+    });
+  }
+}
+
+/**
+ * DELETE /project/:projectId
+ * Delete a project
+ */
+async function deleteProject(req, res) {
+  try {
+    const { projectId } = req.params;
+
+    const project = await Project.findOne({ projectId });
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    // Delete from database
+    await Project.deleteOne({ projectId });
+
+    return res.json({
+      message: 'Project deleted successfully',
+      projectId
+    });
+  } catch (error) {
+    console.error('Delete project error:', error);
+    return res.status(500).json({
+      error: 'Failed to delete project',
+      message: error?.message ?? String(error)
+    });
+  }
+}
+
+/**
+ * POST /project/:projectId/webhook/setup
+ * Setup GitHub webhook for auto-redeploy
+ */
+async function setupWebhook(req, res) {
+  try {
+    const { projectId } = req.params;
+
+    const project = await Project.findOne({ projectId });
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    const user = await User.findOne({ userId: project.owner.userId });
+    if (!user || !user.githubAccessToken) {
+      return res.status(400).json({
+        error: 'GitHub access token not found',
+        message: 'Please authenticate with GitHub first to enable webhooks'
+      });
+    }
+
+    // Parse GitHub repo from URL
+    const gitInfo = parseGitHubRepo(project.gitRepositoryUrl);
+    if (!gitInfo) {
+      return res.status(400).json({
+        error: 'Invalid GitHub repository URL',
+        message: 'Could not parse GitHub owner and repo from URL'
+      });
+    }
+
+    // Generate webhook secret
+    const crypto = require('crypto');
+    const webhookSecret = crypto.randomBytes(32).toString('hex');
+
+    // Create webhook URL
+    const webhookUrl = `${config.API_URL}/api/webhook/github/${projectId}`;
+
+    // Create the webhook on GitHub
+    const webhookResult = await createGitHubWebhook(
+      gitInfo.owner,
+      gitInfo.repo,
+      webhookUrl,
+      webhookSecret,
+      user.githubAccessToken
+    );
+
+    if (!webhookResult.success) {
+      return res.status(400).json({
+        error: 'Failed to create webhook',
+        message: webhookResult.error
+      });
+    }
+
+    // Save webhook info to project
+    project.webhookId = webhookResult.webhookId;
+    project.webhookSecret = webhookSecret;
+    project.autoRedeploy = true;
+    await project.save();
+
+    return res.json({
+      message: 'Webhook created successfully',
+      webhookId: project.webhookId,
+      autoRedeploy: true
+    });
+  } catch (error) {
+    console.error('Setup webhook error:', error);
+    return res.status(500).json({
+      error: 'Failed to setup webhook',
+      message: error?.message ?? String(error)
+    });
+  }
+}
+
+/**
+ * POST /project/:projectId/webhook/delete
+ * Delete GitHub webhook and disable auto-redeploy
+ */
+async function deleteWebhook(req, res) {
+  try {
+    const { projectId } = req.params;
+
+    const project = await Project.findOne({ projectId });
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    const user = await User.findOne({ userId: project.owner.userId });
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    let deleteSuccess = false;
+    let deleteError = null;
+
+    // If user has GitHub token and project has webhookId, try to delete from GitHub
+    if (user.githubAccessToken && project.webhookId) {
+      const gitInfo = parseGitHubRepo(project.gitRepositoryUrl);
+
+      if (gitInfo) {
+        try {
+          console.log(`🗑️ Deleting GitHub webhook ${project.webhookId} from ${gitInfo.owner}/${gitInfo.repo}`);
+
+          const deleteResponse = await fetch(
+            `https://api.github.com/repos/${gitInfo.owner}/${gitInfo.repo}/hooks/${project.webhookId}`,
+            {
+              method: 'DELETE',
+              headers: {
+                'Accept': 'application/vnd.github.v3+json',
+                'Authorization': `Bearer ${user.githubAccessToken}`,
+                'Content-Type': 'application/json',
+              }
+            }
+          );
+
+          if (deleteResponse.ok || deleteResponse.status === 404) {
+            // 204 No Content = success, 404 = already deleted
+            console.log('✅ GitHub webhook deleted successfully');
+            deleteSuccess = true;
+          } else {
+            const errorBody = await deleteResponse.json().catch(() => null);
+            console.error(`❌ Failed to delete GitHub webhook: ${deleteResponse.status}`, errorBody);
+            deleteError = errorBody?.message || `HTTP ${deleteResponse.status}`;
+          }
+        } catch (error) {
+          console.error('❌ Error deleting GitHub webhook:', error.message);
+          deleteError = error.message;
+        }
+      }
+    }
+
+    // Clear webhook data from database
+    await Project.findOneAndUpdate(
+      { projectId },
+      {
+        autoRedeploy: false,
+        webhookId: null,
+        webhookSecret: null,
+      }
+    );
+
+    return res.json({
+      message: 'Auto-redeploy disabled and webhook cleaned up',
+      projectId,
+      webhook: {
+        deleted: deleteSuccess,
+        error: deleteError
+      }
+    });
+  } catch (error) {
+    console.error('Delete webhook error:', error);
+    return res.status(500).json({
+      error: 'Failed to delete webhook',
+      message: error?.message ?? String(error)
+    });
+  }
+}
+
+module.exports = { createProject, streamLogs, listProjects, getProject, getArchivedLogs, redeploy, updateProject, deleteProject, setupWebhook, deleteWebhook };

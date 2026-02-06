@@ -804,4 +804,5 @@ module.exports = {
     enableAutoRedeploy,
     disableAutoRedeploy,
     getWebhookStatus,
+    createGitHubWebhook,
 };
