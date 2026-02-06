@@ -3,6 +3,7 @@ import Login from './pages/Login'
 import Signup from './pages/Signup'
 import CreateProject from './pages/CreateProject'
 import Dashboard from './pages/Dashboard'
+import ProjectDetail from './pages/ProjectDetail'
 import BackgroundPattern from './components/BackgroundPattern'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -20,6 +21,7 @@ function AppContent() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/create-project" element={<CreateProject />} />
+          <Route path="/project/:projectId" element={<ProjectDetail />} />
         </Routes>
       </div>
       {!isAuthPage && <Footer />}

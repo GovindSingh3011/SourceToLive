@@ -219,7 +219,7 @@ function Dashboard() {
                         {filteredProjects.map((project) => (
                             <div
                                 key={project._id}
-                                onClick={() => navigate(`/create-project`)}
+                                onClick={() => navigate(`/project/${project.projectId}`)}
                                 className="relative bg-white/90 backdrop-blur-sm rounded-2xl border border-gray-200/60 shadow-[0_8px_24px_rgba(17,24,39,0.08)] hover:border-blue-300 hover:shadow-[0_16px_48px_rgba(59,130,246,0.15)] hover:-translate-y-2 transition-all duration-300 overflow-hidden cursor-pointer group"
                             >
                                 <div className="absolute inset-0 bg-linear-to-br from-blue-50/50 via-purple-50/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
