@@ -4,6 +4,8 @@ import Signup from './pages/Signup'
 import CreateProject from './pages/CreateProject'
 import Dashboard from './pages/Dashboard'
 import ProjectDetail from './pages/ProjectDetail'
+import ProjectSettings from './pages/ProjectSettings'
+import Profile from './pages/Profile'
 import BackgroundPattern from './components/BackgroundPattern'
 import Navbar from './components/Navbar'
 import Footer from './components/Footer'
@@ -20,8 +22,10 @@ function AppContent() {
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="/create-project" element={<CreateProject />} />
           <Route path="/project/:projectId" element={<ProjectDetail />} />
+          <Route path="/project/:projectId/settings" element={<ProjectSettings />} />
         </Routes>
       </div>
       {!isAuthPage && <Footer />}
