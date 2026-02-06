@@ -436,13 +436,11 @@ async function getProject(req, res) {
   try {
     const doc = await Project.findOne({ projectId }).lean();
     if (!doc) return res.status(404).json({ error: 'not found' });
-    return res.json({ item: doc });
+    return res.json(doc);
   } catch (err) {
     return res.status(500).json({ error: err?.message ?? String(err) });
   }
 }
-
-module.exports = { createProject, streamLogs, listProjects, getProject };
 
 /**
  * GET /project/:projectId/logs/archive
@@ -522,4 +520,4 @@ async function getArchivedLogs(req, res) {
   }
 }
 
-module.exports.getArchivedLogs = getArchivedLogs;
+module.exports = { createProject, streamLogs, listProjects, getProject, getArchivedLogs };
