@@ -1,10 +1,14 @@
 const crypto = require('crypto');
-const { ECSClient, RunTaskCommand } = require('@aws-sdk/client-ecs');
+const { ECSClient, RunTaskCommand, DescribeTasksCommand, DescribeTaskDefinitionCommand, ListTasksCommand } = require('@aws-sdk/client-ecs');
+const { CloudWatchLogsClient, GetLogEventsCommand, DeleteLogStreamCommand } = require('@aws-sdk/client-cloudwatch-logs');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 const config = require('../config');
 const Project = require('../models/Project');
 const User = require('../models/User');
 
 const ecsClient = new ECSClient({ region: config.AWS_REGION });
+const logsClient = new CloudWatchLogsClient({ region: config.AWS_REGION });
+const s3Client = new S3Client({ region: config.AWS_REGION });
 
 /**
  * Extract owner and repo from git URL
@@ -175,7 +179,175 @@ async function triggerRedeploy(project, commitHash) {
     const result = await ecsClient.send(command);
     const taskArn = result.tasks && result.tasks[0] && result.tasks[0].taskArn;
 
+    // Monitor task status asynchronously
+    if (taskArn) {
+        monitorTaskStatus(project.projectId, taskArn).catch(err =>
+            console.error('Error monitoring task status:', err)
+        );
+    }
+
     return { taskArn, result };
+}
+
+/**
+ * Flush CloudWatch logs and archive them to S3
+ */
+async function flushAndArchiveLogsToS3(logGroupName, logStreamName, projectId) {
+    try {
+        const events = [];
+        let nextToken = undefined;
+        let prevToken = undefined;
+
+        for (let i = 0; i < 1000; i++) {
+            const params = { logGroupName, logStreamName, startFromHead: true };
+            if (nextToken) params.nextToken = nextToken;
+
+            try {
+                const resp = await logsClient.send(new GetLogEventsCommand(params));
+                if (resp.events && resp.events.length > 0) events.push(...resp.events);
+
+                if (!resp.nextForwardToken || resp.nextForwardToken === prevToken) break;
+                prevToken = resp.nextForwardToken;
+                nextToken = resp.nextForwardToken;
+
+                await new Promise((r) => setTimeout(r, 200));
+            } catch (err) {
+                const msg = err?.message ?? String(err);
+                if (/log stream .* does not exist/i.test(msg) || /does not exist/i.test(msg)) {
+                    break;
+                }
+                throw err;
+            }
+        }
+
+        const lines = events.map(ev => JSON.stringify({ ts: ev.timestamp, message: ev.message }));
+        const body = lines.join('\n') + '\n';
+
+        const bucket = config.S3_BUCKET;
+        const key = `__logs/${projectId}.log`;
+
+        await s3Client.send(new PutObjectCommand({
+            Bucket: bucket,
+            Key: key,
+            Body: Buffer.from(body, 'utf8'),
+            ContentType: 'text/plain'
+        }));
+
+        // Try to delete the log stream
+        try {
+            await logsClient.send(new DeleteLogStreamCommand({ logGroupName, logStreamName }));
+        } catch (delErr) {
+            const dmsg = delErr?.message ?? String(delErr);
+            if (!/does not exist/i.test(dmsg)) console.error('Error deleting log stream:', dmsg);
+        }
+
+        console.log(`✅ Logs archived to S3: ${key}`);
+        return { bucket, key, count: events.length };
+    } catch (error) {
+        console.error('Error archiving logs:', error);
+        throw error;
+    }
+}
+
+/**
+ * Monitor ECS task status and update project status when complete
+ */
+async function monitorTaskStatus(projectId, taskArn) {
+    const maxAttempts = 180; // 30 minutes with 10 second intervals
+    let attempts = 0;
+
+    const checkTaskStatus = async () => {
+        try {
+            attempts++;
+            if (attempts > maxAttempts) {
+                console.log(`Task monitoring timeout for project ${projectId}`);
+                return;
+            }
+
+            const command = new DescribeTasksCommand({
+                cluster: config.CLUSTER,
+                tasks: [taskArn],
+            });
+
+            const response = await ecsClient.send(command);
+            const task = response.tasks?.[0];
+
+            if (!task) {
+                console.log(`Task not found: ${taskArn}`);
+                return;
+            }
+
+            // Check if task has completed
+            if (task.lastStatus === 'STOPPED' || task.lastStatus === 'STOPPING') {
+                const exitCode = task.containers?.[0]?.exitCode;
+                const status = exitCode === 0 ? 'finished' : 'failed';
+
+                // Try to archive logs to S3
+                try {
+                    const taskId = task.taskArn.split('/').pop();
+                    const containerName = task.containers?.[0]?.name || 'builderimage';
+
+                    // Get task definition to find log configuration
+                    const tdResp = await ecsClient.send(new DescribeTaskDefinitionCommand({
+                        taskDefinition: task.taskDefinitionArn
+                    }));
+
+                    const containerDef = tdResp.taskDefinition?.containerDefinitions?.find(
+                        cd => cd.name === containerName
+                    ) || tdResp.taskDefinition?.containerDefinitions?.[0];
+
+                    const logConf = containerDef?.logConfiguration?.options;
+                    const logGroupName = logConf?.['awslogs-group'];
+                    const streamPrefix = logConf?.['awslogs-stream-prefix'];
+
+                    if (logGroupName && streamPrefix) {
+                        const logStreamName = `${streamPrefix}/${containerName}/${taskId}`;
+                        const archiveResult = await flushAndArchiveLogsToS3(logGroupName, logStreamName, projectId);
+
+                        await Project.findOneAndUpdate(
+                            { projectId },
+                            {
+                                status,
+                                updatedAt: new Date(),
+                                logsS3Key: archiveResult.key,
+                            }
+                        );
+                    } else {
+                        await Project.findOneAndUpdate(
+                            { projectId },
+                            {
+                                status,
+                                updatedAt: new Date(),
+                            }
+                        );
+                    }
+                } catch (archiveErr) {
+                    console.error(`Error archiving logs for ${projectId}:`, archiveErr);
+                    // Still update status even if archiving failed
+                    await Project.findOneAndUpdate(
+                        { projectId },
+                        {
+                            status,
+                            updatedAt: new Date(),
+                        }
+                    );
+                }
+
+                console.log(`✅ Task completed for project ${projectId} with status: ${status}`);
+                return;
+            }
+
+            // Task still running, check again in 10 seconds
+            setTimeout(checkTaskStatus, 10000);
+        } catch (error) {
+            console.error(`Error checking task status for ${projectId}:`, error);
+            // Retry after delay
+            setTimeout(checkTaskStatus, 10000);
+        }
+    };
+
+    // Start monitoring after initial delay
+    setTimeout(checkTaskStatus, 5000);
 }
 
 /**
@@ -626,6 +798,7 @@ async function getWebhookStatus(req, res) {
 }
 
 module.exports = {
+    triggerRedeploy,
     handleGitHubWebhook,
     handleGitLabWebhook,
     enableAutoRedeploy,

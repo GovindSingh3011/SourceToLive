@@ -520,4 +520,42 @@ async function getArchivedLogs(req, res) {
   }
 }
 
-module.exports = { createProject, streamLogs, listProjects, getProject, getArchivedLogs };
+/**
+ * Trigger manual redeploy for a project
+ * POST /api/project/:projectId/redeploy
+ */
+async function redeploy(req, res) {
+  const { projectId } = req.params;
+
+  try {
+    const project = await Project.findOne({ projectId });
+    if (!project) {
+      return res.status(404).json({ error: 'Project not found' });
+    }
+
+    // Import here to avoid circular dependency
+    const { triggerRedeploy } = require('./webhookController');
+
+    // Use the last commit hash, or generate a new one if not available
+    const commitHash = project.lastCommitHash || 'manual-redeploy-' + Date.now();
+
+    // Trigger redeploy
+    const deployment = await triggerRedeploy(project, commitHash);
+
+    return res.json({
+      message: 'Redeploy triggered successfully',
+      projectId,
+      commitHash,
+      taskArn: deployment.taskArn,
+      deployUrl: project.deployUrl,
+    });
+  } catch (error) {
+    console.error('Redeploy error:', error);
+    return res.status(500).json({
+      error: 'Failed to trigger redeploy',
+      message: error?.message ?? String(error)
+    });
+  }
+}
+
+module.exports = { createProject, streamLogs, listProjects, getProject, getArchivedLogs, redeploy };
