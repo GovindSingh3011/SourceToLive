@@ -3,6 +3,7 @@ const morgan = require('morgan');
 const cors = require('cors');
 const path = require('path');
 const mongoose = require('mongoose');
+const os = require('os');
 const config = require('./config');
 const projectRouter = require('./routes/project');
 const authRoutes = require('./routes/authRoutes');
@@ -52,7 +53,25 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: 'Internal Server Error' });
 });
 
+// Get local network IP address dynamically
+function getLocalIP() {
+  const interfaces = os.networkInterfaces();
+  for (const name of Object.keys(interfaces)) {
+    for (const iface of interfaces[name]) {
+      // Skip internal (loopback) and non-IPv4 addresses
+      if (iface.family === 'IPv4' && !iface.internal) {
+        return iface.address;
+      }
+    }
+  }
+  return 'localhost';
+}
+
 const port = config.PORT || 3000;
-app.listen(port, () => {
-  console.log(`Server Running on http://localhost:${port}`);
+const networkIP = getLocalIP();
+
+app.listen(port, '0.0.0.0', () => {
+  console.log(`🚀 Server Running`);
+  console.log(`   Local:   http://localhost:${port}`);
+  console.log(`   Network: http://${networkIP}:${port}`);
 });

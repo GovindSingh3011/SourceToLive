@@ -40,9 +40,35 @@ const projectSchema = new mongoose.Schema({
         type: String,
         default: null,
     },
+    owner: {
+        userId: {
+            type: Number,
+            default: null,
+            index: true,
+        },
+        id: {
+            type: String,
+            default: null,
+        },
+        name: {
+            type: String,
+            default: null,
+            trim: true,
+        },
+        email: {
+            type: String,
+            default: null,
+            trim: true,
+        },
+    },
     lastCommitHash: {
         type: String,
         default: null,
+    },
+    lastCommitMessage: {
+        type: String,
+        default: null,
+        trim: true,
     },
     buildConfig: {
         installCmd: {
