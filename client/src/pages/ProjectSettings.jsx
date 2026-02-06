@@ -343,7 +343,7 @@ function ProjectSettings() {
                             </svg>
                             Back to Project
                         </button>
-                        <h1 className="text-4xl sm:text-5xl font-extrabold bg-linear-to-r from-gray-900 via-gray-800 to-gray-700 bg-clip-text text-transparent">
+                        <h1 className="text-4xl sm:text-5xl font-extrabold leading-tight pb-1 bg-linear-to-r from-gray-900 via-gray-800 to-gray-700 bg-clip-text text-transparent">
                             Project Settings
                         </h1>
                         <p className="text-gray-600 text-sm">
