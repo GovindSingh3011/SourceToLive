@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
+import Home from './pages/Home'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
 import CreateProject from './pages/CreateProject'
@@ -19,6 +20,7 @@ function AppContent() {
       {!isAuthPage && <Navbar />}
       <div className="flex-1 flex items-center justify-center px-4 py-2 relative">
         <Routes>
+          <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
