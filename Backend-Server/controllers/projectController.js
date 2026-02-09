@@ -10,6 +10,32 @@ const ecsClient = new ECSClient({ region: config.AWS_REGION });
 const logsClient = new CloudWatchLogsClient({ region: config.AWS_REGION });
 const s3Client = new S3Client({ region: config.AWS_REGION });
 
+// In-memory cache for GitHub repositories (key: userId, value: { data, timestamp })
+const repositoryCache = {};
+const CACHE_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
+
+// Utility function to get cached repositories
+function getCachedRepositories(userId) {
+  const cached = repositoryCache[userId];
+  if (!cached) return null;
+
+  const now = Date.now();
+  if (now - cached.timestamp > CACHE_EXPIRY_MS) {
+    delete repositoryCache[userId];
+    return null;
+  }
+
+  return cached.data;
+}
+
+// Utility function to set cached repositories
+function setCachedRepositories(userId, repositories) {
+  repositoryCache[userId] = {
+    data: repositories,
+    timestamp: Date.now()
+  };
+}
+
 function parseGitHubRepo(gitUrl) {
   if (!gitUrl || typeof gitUrl !== 'string') return null;
   const match = gitUrl.trim().match(/github\.com[\/:]([^\/]+)\/([^\/\.]+)(\.git)?$/i);
@@ -103,6 +129,18 @@ async function createProject(req, res) {
     return res.status(400).json({ error: 'PROJECT_ID is required and must be a string' });
   }
 
+  // Fetch GitHub token early
+  let githubAccessToken = null;
+  try {
+    const userId = req.user?.userId;
+    if (userId) {
+      const user = await User.findOne({ userId }).select('githubAccessToken').lean();
+      githubAccessToken = user?.githubAccessToken || null;
+    }
+  } catch (err) {
+    console.warn('Failed to fetch GitHub token:', err?.message ?? String(err));
+  }
+
   const params = {
     cluster: config.CLUSTER,
     taskDefinition: config.TASK,
@@ -126,6 +164,7 @@ async function createProject(req, res) {
             { name: 'INSTALL_CMD', value: INSTALL_CMD || 'npm install' },
             { name: 'BUILD_CMD', value: BUILD_CMD || 'npm run build' },
             ...(BUILD_ROOT && BUILD_ROOT.trim() ? [{ name: 'BUILD_ROOT', value: BUILD_ROOT.trim() }] : []),
+            ...(githubAccessToken ? [{ name: 'GITHUB_TOKEN', value: githubAccessToken }] : []),
           ],
         },
       ],
@@ -137,12 +176,6 @@ async function createProject(req, res) {
     let lastCommitMessage = null;
     let lastCommitHash = null;
     try {
-      const userId = req.user?.userId;
-      let githubAccessToken = null;
-      if (userId) {
-        const user = await User.findOne({ userId }).select('githubAccessToken').lean();
-        githubAccessToken = user?.githubAccessToken || null;
-      }
       const lastCommit = await fetchLastGitHubCommitInfo(GIT_REPOSITORY__URL, githubAccessToken);
       if (lastCommit) {
         lastCommitMessage = lastCommit.message;
@@ -781,4 +814,122 @@ async function deleteWebhook(req, res) {
   }
 }
 
-module.exports = { createProject, streamLogs, listProjects, getProject, getArchivedLogs, redeploy, updateProject, deleteProject, setupWebhook, deleteWebhook };
+/**
+ * GET /project/repositories
+ * Fetch user's GitHub repositories (public and private)
+ * Uses the GitHub access token stored in user profile
+ * Results are cached server-side for 1 hour
+ */
+async function fetchGitHubRepositories(req, res) {
+  try {
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    // Check server-side cache first
+    const cachedRepos = getCachedRepositories(userId);
+    if (cachedRepos) {
+      console.info(`📦 Returning cached repositories for user ${userId}`);
+      return res.json({
+        success: true,
+        repositories: cachedRepos,
+        count: cachedRepos.length,
+        cached: true,
+        cacheExpiry: new Date(Date.now() + CACHE_EXPIRY_MS).toISOString()
+      });
+    }
+
+    const user = await User.findOne({ userId }).select('githubAccessToken').lean();
+    if (!user?.githubAccessToken) {
+      return res.status(400).json({
+        error: 'GitHub access token not found',
+        message: 'Please connect your GitHub account first'
+      });
+    }
+
+    const accessToken = user.githubAccessToken;
+
+    const headers = {
+      'Accept': 'application/vnd.github.v3+json',
+      'Authorization': `Bearer ${accessToken}`,
+    };
+
+    // Fetch all repositories (paginated)
+    const repositories = [];
+    let page = 1;
+    const perPage = 100;
+    let hasMore = true;
+
+    while (hasMore) {
+      const apiUrl = `https://api.github.com/user/repos?page=${page}&per_page=${perPage}&sort=updated`;
+      try {
+        const response = await fetch(apiUrl, { headers });
+
+        if (!response.ok) {
+          if (response.status === 401 || response.status === 403) {
+            return res.status(401).json({
+              error: 'GitHub authentication failed',
+              message: 'Your GitHub token may have expired. Please reconnect your account.'
+            });
+          }
+          if (response.status === 429) {
+            const retryAfter = response.headers.get('Retry-After') || '60';
+            return res.status(429).json({
+              error: 'GitHub API rate limit exceeded',
+              message: `Rate limited by GitHub. Please try again in ${retryAfter} seconds.`,
+              retryAfter: parseInt(retryAfter, 10)
+            });
+          }
+          throw new Error(`GitHub API error: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        if (Array.isArray(data) && data.length > 0) {
+          repositories.push(...data.map(repo => ({
+            id: repo.id,
+            name: repo.name,
+            fullName: repo.full_name,
+            url: repo.html_url,
+            sshUrl: repo.ssh_url,
+            cloneUrl: repo.clone_url,
+            private: repo.private,
+            description: repo.description,
+            language: repo.language,
+            updatedAt: repo.updated_at,
+            owner: repo.owner.login,
+          })));
+          page++;
+        } else {
+          hasMore = false;
+        }
+      } catch (err) {
+        console.error('Error fetching repositories:', err.message);
+        throw err;
+      }
+    }
+
+    // Sort by updated date (most recent first)
+    repositories.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
+
+    // Cache the results server-side
+    setCachedRepositories(userId, repositories);
+    console.info(`✅ Cached ${repositories.length} repositories for user ${userId}`);
+
+    res.json({
+      success: true,
+      repositories,
+      count: repositories.length,
+      cached: false,
+      cacheExpiry: new Date(Date.now() + CACHE_EXPIRY_MS).toISOString()
+    });
+  } catch (error) {
+    console.error('Fetch repositories error:', error);
+    return res.status(500).json({
+      error: 'Failed to fetch repositories',
+      message: error?.message ?? String(error)
+    });
+  }
+}
+
+module.exports = { createProject, streamLogs, listProjects, getProject, getArchivedLogs, redeploy, updateProject, deleteProject, setupWebhook, deleteWebhook, fetchGitHubRepositories };
