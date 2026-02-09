@@ -108,6 +108,16 @@ async function createProject(req, res) {
     return res.status(400).json({ error: 'PROJECT_ID can only contain lowercase letters, numbers, and hyphens' });
   }
 
+  // Check if project with same ID already exists for this user
+  try {
+    const existingProject = await Project.findOne({ projectId: PROJECT_ID, 'owner.userId': req.user?.userId }).lean();
+    if (existingProject) {
+      return res.status(409).json({ error: 'A project with this name already exists. Please use a different project name.' });
+    }
+  } catch (checkErr) {
+    console.warn('Failed to check for duplicate project:', checkErr?.message ?? String(checkErr));
+  }
+
   // Fetch GitHub token early
   let githubAccessToken = null;
   try {
@@ -164,10 +174,10 @@ async function createProject(req, res) {
       console.warn('Failed to fetch last commit info:', commitErr?.message ?? String(commitErr));
     }
 
-    // Persist or upsert the project record with initial details
+    // Persist or create the project record with initial details (do NOT upsert for other users)
     const expectedDeployUrl = `https://${PROJECT_ID}.${config.APP_DOMAIN}`;
-    await Project.findOneAndUpdate(
-      { projectId: PROJECT_ID },
+    const createdProject = await Project.findOneAndUpdate(
+      { projectId: PROJECT_ID, 'owner.userId': req.user?.userId },
       {
         projectId: PROJECT_ID,
         gitRepositoryUrl: GIT_REPOSITORY__URL,
@@ -217,7 +227,7 @@ async function createProject(req, res) {
     // Mark project as running if task started
     if (taskArn) {
       await Project.findOneAndUpdate(
-        { projectId: PROJECT_ID },
+        { projectId: PROJECT_ID, 'owner.userId': req.user?.userId },
         { status: 'running' }
       );
     }
@@ -235,7 +245,7 @@ async function createProject(req, res) {
     // Mark project as failed in case of error
     try {
       await Project.findOneAndUpdate(
-        { projectId: PROJECT_ID },
+        { projectId: PROJECT_ID, 'owner.userId': req.user?.userId },
         { status: 'failed' }
       );
     } catch (_) { }
@@ -363,7 +373,7 @@ async function streamLogs(req, res) {
                 try {
                   const resInfo = await flushAndArchiveLogs(logGroupName, logStreamName, projectId);
                   await Project.findOneAndUpdate(
-                    { projectId },
+                    { projectId, 'owner.userId': req.user?.userId },
                     {
                       status: isFailed ? 'failed' : 'finished',
                       logsS3Key: resInfo?.key || null,
@@ -373,7 +383,7 @@ async function streamLogs(req, res) {
                   // Even if archiving fails, mark with appropriate status
                   try {
                     await Project.findOneAndUpdate(
-                      { projectId },
+                      { projectId, 'owner.userId': req.user?.userId },
                       { status: isFailed ? 'failed' : 'finished' }
                     );
                   } catch (_) { }

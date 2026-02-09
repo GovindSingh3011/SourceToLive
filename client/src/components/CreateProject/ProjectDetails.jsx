@@ -6,6 +6,48 @@ function ProjectDetails({ gitUrl, onDeploy, onBack, isLoading }) {
     const [buildCmd, setBuildCmd] = useState('npm run build')
     const [buildRoot, setBuildRoot] = useState('')
     const [errors, setErrors] = useState({})
+    const [checkingProjectId, setCheckingProjectId] = useState(false)
+
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
+
+    const checkProjectIdExists = async (id) => {
+        if (!id.trim() || !/^[a-z0-9-]+$/.test(id)) {
+            return false
+        }
+
+        try {
+            setCheckingProjectId(true)
+            const token = localStorage.getItem('token')
+            const response = await fetch(`${API_URL}/api/project/${id.trim()}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+
+            // If status is 200, project exists; if 404, project doesn't exist
+            return response.status === 200
+        } catch (err) {
+            console.error('Error checking project ID:', err)
+            return false
+        } finally {
+            setCheckingProjectId(false)
+        }
+    }
+
+    const handleProjectIdBlur = async () => {
+        if (projectId.trim() && !/^[a-z0-9-]+$/.test(projectId)) {
+            return // Let validateForm handle format errors
+        }
+
+        if (projectId.trim()) {
+            const exists = await checkProjectIdExists(projectId)
+            if (exists) {
+                setErrors({ ...errors, projectId: 'A project with this name already exists. Please use a different project name.' })
+            }
+        }
+    }
 
     const validateForm = () => {
         const newErrors = {}
@@ -29,6 +71,11 @@ function ProjectDetails({ gitUrl, onDeploy, onBack, isLoading }) {
     }
 
     const handleDeploy = () => {
+        // Check if there's already a duplicate project ID error
+        if (errors.projectId) {
+            return
+        }
+
         if (!validateForm()) {
             return
         }
@@ -116,13 +163,15 @@ function ProjectDetails({ gitUrl, onDeploy, onBack, isLoading }) {
                                     setProjectId(e.target.value)
                                     if (errors.projectId) setErrors({ ...errors, projectId: '' })
                                 }}
-                                placeholder="my-project-123"
-                                disabled={isLoading}
+                                onBlur={handleProjectIdBlur}
+                                placeholder="e.g. my-project-123"
+                                disabled={isLoading || checkingProjectId}
                                 className={`w-full h-10 sm:h-12 px-3 sm:px-4 bg-white border-2 rounded-lg sm:rounded-xl text-gray-900 text-sm placeholder-gray-400 focus:outline-none transition-all duration-300 font-medium ${errors.projectId
                                     ? 'border-red-300 focus:border-red-500 focus:ring-4 focus:ring-red-200/40'
                                     : 'border-gray-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10'
-                                    } ${isLoading ? 'bg-gray-50 cursor-not-allowed text-gray-600' : ''}`}
+                                    } ${(isLoading || checkingProjectId) ? 'bg-gray-50 cursor-not-allowed text-gray-600' : ''}`}
                             />
+                            {checkingProjectId && <span className="flex text-blue-600 mt-1 sm:mt-2 text-xs font-medium items-center gap-1">⏳ Checking availability...</span>}
                             {errors.projectId && <span className="flex text-red-600 mt-1 sm:mt-2 text-xs font-medium items-center gap-1">⚠️ {errors.projectId}</span>}
                         </div>
 
@@ -187,7 +236,7 @@ function ProjectDetails({ gitUrl, onDeploy, onBack, isLoading }) {
                                 type="text"
                                 value={buildRoot}
                                 onChange={(e) => setBuildRoot(e.target.value)}
-                                placeholder="e.g., client/ or packages/web"
+                                placeholder="e.g. client/ or packages/web"
                                 disabled={isLoading}
                                 className={`w-full h-10 sm:h-12 px-3 sm:px-4 bg-white border-2 border-gray-200 rounded-lg sm:rounded-xl text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 transition-all duration-300 font-medium ${isLoading ? 'bg-gray-50 cursor-not-allowed text-gray-600' : ''}`}
                             />
