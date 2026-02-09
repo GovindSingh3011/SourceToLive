@@ -1,10 +1,11 @@
 const express = require('express');
 const router = express.Router();
-const { createProject, streamLogs, getArchivedLogs, listProjects, getProject, redeploy, updateProject, deleteProject, setupWebhook, deleteWebhook } = require('../controllers/projectController');
+const { createProject, streamLogs, getArchivedLogs, listProjects, getProject, redeploy, updateProject, deleteProject, setupWebhook, deleteWebhook, fetchGitHubRepositories } = require('../controllers/projectController');
 const verifyToken = require('../middleware/verifyToken');
 const isUser = require('../middleware/isUser');
 
 router.get('/', verifyToken, isUser, listProjects);
+router.get('/repositories/github', verifyToken, isUser, fetchGitHubRepositories);
 router.get('/:projectId', verifyToken, getProject);
 router.post('/', verifyToken, isUser, createProject);
 router.put('/:projectId', verifyToken, isUser, updateProject);
