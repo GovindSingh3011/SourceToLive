@@ -103,6 +103,11 @@ async function createProject(req, res) {
     return res.status(400).json({ error: 'PROJECT_ID is required and must be a string' });
   }
 
+  // Validate PROJECT_ID format: only lowercase letters, numbers, and hyphens
+  if (!/^[a-z0-9-]+$/.test(PROJECT_ID)) {
+    return res.status(400).json({ error: 'PROJECT_ID can only contain lowercase letters, numbers, and hyphens' });
+  }
+
   // Fetch GitHub token early
   let githubAccessToken = null;
   try {

@@ -12,8 +12,8 @@ function ProjectDetails({ gitUrl, onDeploy, onBack, isLoading }) {
 
         if (!projectId.trim()) {
             newErrors.projectId = 'Project Name is required'
-        } else if (!/^[a-zA-Z0-9_-]+$/.test(projectId)) {
-            newErrors.projectId = 'Project Name can only contain letters, numbers, hyphens, and underscores'
+        } else if (!/^[a-z0-9-]+$/.test(projectId)) {
+            newErrors.projectId = 'Project Name can only contain lowercase letters, numbers, and hyphens'
         }
 
         if (!installCmd.trim()) {
