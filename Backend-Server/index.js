@@ -20,12 +20,23 @@ mongoose.connect(config.MONGODB_URI)
   });
 
 // Enable CORS
-app.use(cors({
-  origin: config.CORS_ORIGIN ? config.CORS_ORIGIN.split(',') : '*',
+const corsOptions = {
+  origin: (origin, callback) => {
+    const allowedOrigins = (config.CORS_ORIGIN ?? '').split(',').map(o => o.trim()).filter(Boolean);
+
+    if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions));
 
 app.use(express.json());
 
