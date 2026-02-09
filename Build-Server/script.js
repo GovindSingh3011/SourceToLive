@@ -87,7 +87,9 @@ async function init() {
     writeEvent('Executing script.js')
 
     if (!process.env.GITHUB_TOKEN) {
-        writeEvent('Warning: GITHUB_TOKEN is not provided. If the repository is private, authentication will fail.', 'warn')
+        writeEvent('Info: GITHUB_TOKEN not provided. Public repositories will work, but private repository access will fail.', 'warn')
+    } else {
+        writeEvent('GitHub token detected. Private repository access enabled.')
     }
 
     const outDirPath = path.join(__dirname, 'output')
