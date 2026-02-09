@@ -145,15 +145,32 @@ function GitURLInput({ onContinue, isLoading }) {
         setError('')
 
         if (publicRepoUrl.trim()) {
-            // Validate basic URL format for public repos
+            let finalUrl = publicRepoUrl.trim()
+
+            // Handle short format: owner/repo or owner/repo.git
+            if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://')) {
+                // Check if it's a valid owner/repo format
+                const shortFormatPattern = /^[a-zA-Z0-9_-]+\/[a-zA-Z0-9_.-]+(.git)?$/
+                if (!shortFormatPattern.test(finalUrl)) {
+                    setError('Please enter a valid repository URL (e.g., owner/repo or https://github.com/owner/repo)')
+                    return
+                }
+                // Convert short format to full GitHub URL
+                finalUrl = `https://github.com/${finalUrl}`
+            }
+
+            // Validate full URL format
             const urlPattern = /^https?:\/\/.+/
-            if (!urlPattern.test(publicRepoUrl.trim())) {
-                setError('Please enter a valid repository URL (must start with http:// or https://)')
+            if (!urlPattern.test(finalUrl)) {
+                setError('Please enter a valid repository URL')
                 return
             }
-            onContinue(publicRepoUrl.trim())
+
+            // Remove .git extension if present
+            const cleanUrl = finalUrl.replace(/\.git$/, '')
+            onContinue(cleanUrl)
         } else {
-            // Use the HTTPS clone URL from selected private repo
+            // Use the HTTPS clone URL from selected private repo (already cleaned)
             onContinue(selectedRepo.cloneUrl)
         }
     }
@@ -215,7 +232,7 @@ function GitURLInput({ onContinue, isLoading }) {
                                         setError('')
                                     }}
                                     onKeyPress={handleKeyPress}
-                                    placeholder="https://github.com/username/repository.git"
+                                    placeholder="owner/repo or https://github.com/owner/repo"
                                     disabled={isLoading}
                                     className={`w-full h-9 sm:h-10 md:h-12 pl-8 sm:pl-10 md:pl-12 pr-2.5 sm:pr-3 md:pr-4 bg-white border-2 rounded-lg sm:rounded-xl text-gray-900 text-xs sm:text-sm placeholder-gray-400 focus:outline-none transition-all duration-300 font-medium ${error && publicRepoUrl
                                         ? 'border-red-300 focus:border-red-500 focus:ring-2 sm:focus:ring-4 focus:ring-red-200/40'
@@ -250,7 +267,7 @@ function GitURLInput({ onContinue, isLoading }) {
 
                         <p className="text-gray-500 text-[10px] sm:text-xs mt-1.5 sm:mt-2 flex items-start gap-1.5 sm:gap-2">
                             <span className="shrink-0 mt-0.5 text-xs sm:text-sm">ℹ️</span>
-                            <span>Enter any public repository URL (e.g., GitHub, GitLab, Bitbucket)</span>
+                            <span>Enter a public repository URL (e.g., owner/repo, https://github.com/owner/repo, or any public repo URL)</span>
                         </p>
                     </div>
 
@@ -321,6 +338,7 @@ function GitURLInput({ onContinue, isLoading }) {
                                                     setShowDropdown(false)
                                                     setSearchQuery('')
                                                     setError('')
+                                                    // cloneUrl already has .git removed by backend
                                                     onContinue(repo.cloneUrl)
                                                 }}
                                                 className="w-full px-2.5 sm:px-3 md:px-4 py-2.5 sm:py-3 md:py-4 hover:bg-white border-b border-gray-200 last:border-b-0 text-left transition-colors group cursor-pointer"

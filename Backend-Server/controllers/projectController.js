@@ -892,7 +892,7 @@ async function fetchGitHubRepositories(req, res) {
             fullName: repo.full_name,
             url: repo.html_url,
             sshUrl: repo.ssh_url,
-            cloneUrl: repo.clone_url,
+            cloneUrl: repo.clone_url.replace(/\.git$/, ''),
             private: repo.private,
             description: repo.description,
             language: repo.language,
