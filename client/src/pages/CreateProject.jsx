@@ -237,6 +237,7 @@ function CreateProject() {
                                 error={error}
                                 projectConfig={projectConfig}
                                 gitUrl={gitUrl}
+                                navigate={navigate}
                             />
                         )}
                     </div>

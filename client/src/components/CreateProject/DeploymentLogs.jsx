@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 
-function DeploymentLogs({ projectId, isDeploying, logs, deploymentUrl, error, projectConfig, gitUrl }) {
+function DeploymentLogs({ projectId, isDeploying, logs, deploymentUrl, error, projectConfig, gitUrl, navigate }) {
     const logsEndRef = useRef(null)
 
     useEffect(() => {
@@ -198,13 +198,35 @@ function DeploymentLogs({ projectId, isDeploying, logs, deploymentUrl, error, pr
                         )}
                     </div>
 
-                    {/* Success Message */}
-                    {!isDeploying && logs.length > 0 && !deploymentUrl && !error && (
-                        <div className="bg-linear-to-r from-blue-50 to-blue-50 border border-blue-300 rounded-2xl p-4 sm:p-5 text-blue-900 text-xs sm:text-sm animate-in slide-in-from-bottom-2 duration-300">
-                            <p className="m-0 flex items-start gap-3">
-                                <span className="text-lg shrink-0 mt-0.5">ℹ️</span>
-                                <span className="leading-relaxed">Deployment logs streamed successfully. Check your live URL in the deployment info above.</span>
-                            </p>
+                    {/* Completion Messages */}
+                    {!isDeploying && logs.length > 0 && !error && (
+                        <div className="space-y-4">
+                            <div className="bg-linear-to-r from-green-50 to-green-50 border border-green-300 rounded-2xl p-4 sm:p-5 text-green-900 text-xs sm:text-sm animate-in slide-in-from-bottom-2 duration-300">
+                                <p className="m-0 flex items-start gap-3">
+                                    <span className="text-lg shrink-0 mt-0.5">✅</span>
+                                    <span className="leading-relaxed">Deployment completed successfully! Your project is now live.</span>
+                                </p>
+                            </div>
+                            {navigate && (
+                                <button
+                                    onClick={() => navigate('/dashboard')}
+                                    className="w-full px-6 py-3 cursor-pointer bg-linear-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold rounded-2xl transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+                                >
+                                    Go to Dashboard
+                                </button>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Error with Dashboard Button */}
+                    {error && navigate && (
+                        <div className="mt-4">
+                            <button
+                                onClick={() => navigate('/dashboard')}
+                                className="w-full px-6 py-3 cursor-pointer bg-linear-to-r from-gray-700 to-gray-800 hover:from-gray-800 hover:to-gray-900 text-white font-semibold rounded-2xl transition-all duration-200 hover:shadow-lg hover:-translate-y-0.5"
+                            >
+                                Go to Dashboard
+                            </button>
                         </div>
                     )}
                 </div>
