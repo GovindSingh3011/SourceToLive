@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
+import { useEffect } from 'react'
 import Home from './pages/Home'
 import Login from './pages/Login'
 import Signup from './pages/Signup'
@@ -15,6 +16,10 @@ import Footer from './components/Footer'
 function AppContent() {
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/signup';
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [location.pathname]);
   return (
     <div className="min-h-screen bg-linear-to-br from-gray-50 via-white to-blue-50 flex flex-col">
       <BackgroundPattern />
