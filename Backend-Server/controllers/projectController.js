@@ -10,32 +10,6 @@ const ecsClient = new ECSClient({ region: config.AWS_REGION });
 const logsClient = new CloudWatchLogsClient({ region: config.AWS_REGION });
 const s3Client = new S3Client({ region: config.AWS_REGION });
 
-// In-memory cache for GitHub repositories (key: userId, value: { data, timestamp })
-const repositoryCache = {};
-const CACHE_EXPIRY_MS = 60 * 60 * 1000; // 1 hour
-
-// Utility function to get cached repositories
-function getCachedRepositories(userId) {
-  const cached = repositoryCache[userId];
-  if (!cached) return null;
-
-  const now = Date.now();
-  if (now - cached.timestamp > CACHE_EXPIRY_MS) {
-    delete repositoryCache[userId];
-    return null;
-  }
-
-  return cached.data;
-}
-
-// Utility function to set cached repositories
-function setCachedRepositories(userId, repositories) {
-  repositoryCache[userId] = {
-    data: repositories,
-    timestamp: Date.now()
-  };
-}
-
 function parseGitHubRepo(gitUrl) {
   if (!gitUrl || typeof gitUrl !== 'string') return null;
   const match = gitUrl.trim().match(/github\.com[\/:]([^\/]+)\/([^\/\.]+)(\.git)?$/i);
@@ -827,19 +801,6 @@ async function fetchGitHubRepositories(req, res) {
       return res.status(401).json({ error: 'User not authenticated' });
     }
 
-    // Check server-side cache first
-    const cachedRepos = getCachedRepositories(userId);
-    if (cachedRepos) {
-      console.info(`📦 Returning cached repositories for user ${userId}`);
-      return res.json({
-        success: true,
-        repositories: cachedRepos,
-        count: cachedRepos.length,
-        cached: true,
-        cacheExpiry: new Date(Date.now() + CACHE_EXPIRY_MS).toISOString()
-      });
-    }
-
     const user = await User.findOne({ userId }).select('githubAccessToken').lean();
     if (!user?.githubAccessToken) {
       return res.status(400).json({
@@ -912,16 +873,10 @@ async function fetchGitHubRepositories(req, res) {
     // Sort by updated date (most recent first)
     repositories.sort((a, b) => new Date(b.updatedAt) - new Date(a.updatedAt));
 
-    // Cache the results server-side
-    setCachedRepositories(userId, repositories);
-    console.info(`✅ Cached ${repositories.length} repositories for user ${userId}`);
-
     res.json({
       success: true,
       repositories,
-      count: repositories.length,
-      cached: false,
-      cacheExpiry: new Date(Date.now() + CACHE_EXPIRY_MS).toISOString()
+      count: repositories.length
     });
   } catch (error) {
     console.error('Fetch repositories error:', error);

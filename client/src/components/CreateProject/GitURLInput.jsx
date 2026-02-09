@@ -13,8 +13,6 @@ function GitURLInput({ onContinue, isLoading }) {
     const dropdownRef = useRef(null)
 
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
-    const CACHE_KEY = 'github_repositories_cache'
-    const CACHE_EXPIRY = 60 * 60 * 1000 // 1 hour
 
     useEffect(() => {
         // Fetch repositories on component mount
@@ -38,28 +36,6 @@ function GitURLInput({ onContinue, isLoading }) {
     const fetchRepositories = async (isRetry = false) => {
         try {
             setIsFetchingRepos(true)
-
-            // Check cache first
-            if (!isRetry) {
-                const cached = localStorage.getItem(CACHE_KEY)
-                if (cached) {
-                    try {
-                        const { repos, timestamp } = JSON.parse(cached)
-                        const isExpired = Date.now() - timestamp > CACHE_EXPIRY
-
-                        if (!isExpired && repos && repos.length > 0) {
-                            setRepositories(repos)
-                            setFilteredRepositories(repos)
-                            setIsFetchingRepos(false)
-                            return
-                        }
-                    } catch (e) {
-                        // Invalid cache, continue with fetch
-                        localStorage.removeItem(CACHE_KEY)
-                    }
-                }
-            }
-
             setError('')
             const token = localStorage.getItem('token')
 
@@ -91,12 +67,6 @@ function GitURLInput({ onContinue, isLoading }) {
 
             const data = await response.json()
             const repos = data.repositories || []
-
-            // Cache the repositories
-            localStorage.setItem(CACHE_KEY, JSON.stringify({
-                repos: repos,
-                timestamp: Date.now()
-            }))
 
             setRepositories(repos)
             setFilteredRepositories(repos)
@@ -363,6 +333,27 @@ function GitURLInput({ onContinue, isLoading }) {
                                             </button>
                                         ))}
                                     </div>
+                                ) : (repositories.length === 0 && error) ? (
+                                    // Show nothing - error is displayed in the error section above
+                                    null
+                                ) : (repositories.length === 0) ? (
+                                    <div className="bg-blue-50 border border-blue-200 rounded-lg sm:rounded-xl p-4 sm:p-5">
+                                        <div className="flex gap-3">
+                                            <span className="text-2xl shrink-0">ℹ️</span>
+                                            <div>
+                                                <p className="text-blue-900 text-xs sm:text-sm font-semibold m-0">Please connect your GitHub account first</p>
+                                                <p className="text-blue-800 text-[10px] sm:text-xs mt-2">Please connect your GitHub account in your profile settings to import private repositories.</p>
+                                                <button
+                                                    onClick={() => {
+                                                        window.location.href = '/profile'
+                                                    }}
+                                                    className="mt-2.5 inline-block px-2.5 sm:px-3 py-1 sm:py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] sm:text-xs font-semibold rounded transition-colors"
+                                                >
+                                                    Go to GitHub Integration
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 ) : (
                                     <div className="px-3 sm:px-4 py-6 sm:py-8 text-center bg-gray-50 border-2 border-dashed border-gray-200 rounded-lg sm:rounded-xl">
                                         <p className="text-xs sm:text-sm text-gray-600">No repositories found</p>
@@ -380,12 +371,35 @@ function GitURLInput({ onContinue, isLoading }) {
 
                     {/* Error Message */}
                     {error && (
-                        <div className="mt-4 sm:mt-5 md:mt-6 p-2.5 sm:p-3 md:p-4 bg-red-50 border border-red-200 rounded-lg sm:rounded-xl flex gap-2 sm:gap-3 animate-in slide-in-from-top-2 duration-300">
-                            <span className="text-base sm:text-lg md:text-xl shrink-0 mt-0.5">⚠️</span>
+                        <div className={`mt-4 sm:mt-5 md:mt-6 p-2.5 sm:p-3 md:p-4 border rounded-lg sm:rounded-xl flex gap-2 sm:gap-3 animate-in slide-in-from-top-2 duration-300 ${(error.toLowerCase().includes('token') || error.toLowerCase().includes('connect'))
+                                ? 'bg-blue-50 border-blue-200'
+                                : 'bg-red-50 border-red-200'
+                            }`}>
+                            <span className={`text-base sm:text-lg md:text-xl shrink-0 mt-0.5 ${(error.toLowerCase().includes('token') || error.toLowerCase().includes('connect'))
+                                    ? ''
+                                    : ''
+                                }`}>
+                                {(error.toLowerCase().includes('token') || error.toLowerCase().includes('connect')) ? 'ℹ️' : '⚠️'}
+                            </span>
                             <div>
-                                <p className="text-red-900 text-[11px] sm:text-xs md:text-sm font-medium m-0">{error}</p>
-                                {error.toLowerCase().includes('token') && (
-                                    <p className="text-red-800 text-[10px] sm:text-xs mt-1">Please connect your GitHub account in your profile settings</p>
+                                <p className={`text-[11px] sm:text-xs md:text-sm font-medium m-0 ${(error.toLowerCase().includes('token') || error.toLowerCase().includes('connect'))
+                                        ? 'text-blue-900'
+                                        : 'text-red-900'
+                                    }`}>
+                                    {error}
+                                </p>
+                                {(error.toLowerCase().includes('token') || error.toLowerCase().includes('connect')) && (
+                                    <div className="text-blue-800 text-[10px] sm:text-xs mt-1.5 sm:mt-2 space-y-1.5 sm:space-y-2">
+                                        <p>Please connect your GitHub account in your profile settings to import private repositories.</p>
+                                        <button
+                                            onClick={() => {
+                                                window.location.href = '/profile'
+                                            }}
+                                            className="inline-block px-2.5 sm:px-3 py-1 sm:py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] sm:text-xs font-semibold rounded transition-colors"
+                                        >
+                                            Go to GitHub Integration
+                                        </button>
+                                    </div>
                                 )}
                                 {error.toLowerCase().includes('too many requests') && (
                                     <div className="text-red-800 text-[10px] sm:text-xs mt-1.5 sm:mt-2 space-y-1.5 sm:space-y-2">
@@ -398,7 +412,6 @@ function GitURLInput({ onContinue, isLoading }) {
                                         <button
                                             onClick={() => {
                                                 setRetryCount(0)
-                                                localStorage.removeItem(CACHE_KEY)
                                                 fetchRepositories()
                                             }}
                                             className="mt-1.5 sm:mt-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-red-600 hover:bg-red-700 text-white text-[10px] sm:text-xs font-semibold rounded transition-colors"
