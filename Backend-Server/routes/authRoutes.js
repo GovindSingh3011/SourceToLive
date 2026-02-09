@@ -23,9 +23,6 @@ router.delete('/github-token', verifyToken, authController.removeGitHubToken);
 // User info routes
 router.get('/me', verifyToken, authController.getCurrentUser);
 
-// GitHub repositories
-router.get('/github/repos', verifyToken, authController.getGithubRepos);
-
 // Debug routes (development only)
 router.get('/debug/pending', authController.getPendingRegistrations);
 router.get('/debug/otp/:email', authController.getOTPForEmail);

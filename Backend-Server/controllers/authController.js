@@ -707,70 +707,6 @@ const getCurrentUser = async (req, res) => {
     }
 };
 
-/**
- * Get GitHub repositories for authenticated user
- * GET /api/auth/github/repos
- */
-const getGithubRepos = async (req, res) => {
-    try {
-        const userId = req.user.userId; // From verifyToken middleware
-
-        const user = await User.findOne({ userId });
-        if (!user || !user.githubAccessToken) {
-            return res.status(400).json({
-                message: 'GitHub account not connected. Please connect your GitHub account first.'
-            });
-        }
-
-        // Fetch repositories from GitHub
-        const response = await fetch('https://api.github.com/user/repos?per_page=100&sort=updated', {
-            headers: {
-                'Authorization': `Bearer ${user.githubAccessToken}`,
-                'Accept': 'application/vnd.github.v3+json'
-            }
-        });
-
-        if (!response.ok) {
-            // Token might be invalid
-            if (response.status === 401) {
-                return res.status(401).json({
-                    message: 'GitHub token is invalid or expired. Please reconnect your GitHub account.'
-                });
-            }
-            throw new Error(`GitHub API error: ${response.statusText}`);
-        }
-
-        const repos = await response.json();
-
-        // Format repository data
-        const formattedRepos = repos.map(repo => ({
-            id: repo.id,
-            name: repo.name,
-            fullName: repo.full_name,
-            owner: repo.owner.login,
-            private: repo.private,
-            description: repo.description,
-            cloneUrl: repo.clone_url,
-            htmlUrl: repo.html_url,
-            defaultBranch: repo.default_branch,
-            updatedAt: repo.updated_at,
-            language: repo.language
-        }));
-
-        return res.status(200).json({
-            repos: formattedRepos,
-            count: formattedRepos.length
-        });
-
-    } catch (error) {
-        console.error('Get GitHub repos error:', error);
-        return res.status(500).json({
-            message: 'Failed to fetch GitHub repositories',
-            error: error.message
-        });
-    }
-};
-
 module.exports = {
     loginUser,
     registerUser,
@@ -783,6 +719,5 @@ module.exports = {
     saveGitHubToken,
     getGitHubTokenStatus,
     removeGitHubToken,
-    getCurrentUser,
-    getGithubRepos
+    getCurrentUser
 };
