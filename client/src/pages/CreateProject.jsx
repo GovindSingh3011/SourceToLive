@@ -74,6 +74,7 @@ function CreateProject() {
                     INSTALL_CMD: config.installCmd,
                     BUILD_CMD: config.buildCmd,
                     BUILD_ROOT: config.buildRoot,
+                    ENVIRONMENT_VARIABLES: config.environmentVariables || [],
                     OWNER_NAME: ownerName,
                 }),
             })
