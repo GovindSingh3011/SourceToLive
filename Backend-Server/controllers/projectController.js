@@ -92,7 +92,7 @@ async function flushAndArchiveLogs(logGroupName, logStreamName, projectId) {
  * Queues an ECS RunTask and forwards PROJECT_ID and GIT_REPOSITORY__URL to the container.
  */
 async function createProject(req, res) {
-  const { GIT_REPOSITORY__URL, PROJECT_ID, INSTALL_CMD, BUILD_CMD, BUILD_ROOT } = req.body || {};
+  const { GIT_REPOSITORY__URL, PROJECT_ID, INSTALL_CMD, BUILD_CMD, BUILD_ROOT, ENVIRONMENT_VARIABLES } = req.body || {};
   const ownerName = [req.user?.firstName, req.user?.lastName].filter(Boolean).join(' ').trim() || null;
 
   if (!GIT_REPOSITORY__URL || typeof GIT_REPOSITORY__URL !== 'string') {
@@ -154,6 +154,7 @@ async function createProject(req, res) {
             { name: 'BUILD_CMD', value: BUILD_CMD || 'npm run build' },
             ...(BUILD_ROOT && BUILD_ROOT.trim() ? [{ name: 'BUILD_ROOT', value: BUILD_ROOT.trim() }] : []),
             ...(githubAccessToken ? [{ name: 'GITHUB_TOKEN', value: githubAccessToken }] : []),
+            ...(Array.isArray(ENVIRONMENT_VARIABLES) ? ENVIRONMENT_VARIABLES.map(ev => ({ name: ev.key, value: ev.value })) : []),
           ],
         },
       ],
@@ -196,6 +197,7 @@ async function createProject(req, res) {
           buildCmd: BUILD_CMD || 'npm run build',
           buildRoot: BUILD_ROOT && BUILD_ROOT.trim() ? BUILD_ROOT.trim() : null,
         },
+        environmentVariables: Array.isArray(ENVIRONMENT_VARIABLES) ? ENVIRONMENT_VARIABLES : [],
       },
       { upsert: true, new: true, setDefaultsOnInsert: true }
     );
