@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import EnvironmentVariables from './EnvironmentVariables'
 
 function ProjectDetails({ gitUrl, onDeploy, onBack, isLoading }) {
     const [projectId, setProjectId] = useState('')
     const [installCmd, setInstallCmd] = useState('npm install')
     const [buildCmd, setBuildCmd] = useState('npm run build')
     const [buildRoot, setBuildRoot] = useState('')
+    const [environmentVariables, setEnvironmentVariables] = useState([])
     const [errors, setErrors] = useState({})
     const [checkingProjectId, setCheckingProjectId] = useState(false)
 
@@ -85,6 +87,7 @@ function ProjectDetails({ gitUrl, onDeploy, onBack, isLoading }) {
             installCmd: installCmd.trim(),
             buildCmd: buildCmd.trim(),
             buildRoot: buildRoot.trim(),
+            environmentVariables: environmentVariables,
         })
     }
 
@@ -241,6 +244,15 @@ function ProjectDetails({ gitUrl, onDeploy, onBack, isLoading }) {
                                 className={`w-full h-10 sm:h-12 px-3 sm:px-4 bg-white border-2 border-gray-200 rounded-lg sm:rounded-xl text-gray-900 text-sm placeholder-gray-400 focus:outline-none focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 transition-all duration-300 font-medium ${isLoading ? 'bg-gray-50 cursor-not-allowed text-gray-600' : ''}`}
                             />
                             <p className="text-gray-500 text-xs mt-1.5 sm:mt-2">Path to the directory to build (if not root)</p>
+                        </div>
+
+                        {/* Environment Variables */}
+                        <div>
+                            <EnvironmentVariables
+                                variables={environmentVariables}
+                                onVariablesChange={setEnvironmentVariables}
+                                isDisabled={isLoading}
+                            />
                         </div>
 
                         {/* Button Group */}
