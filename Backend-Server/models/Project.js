@@ -84,6 +84,20 @@ const projectSchema = new mongoose.Schema({
             default: null,
         },
     },
+    environmentVariables: [
+        {
+            key: {
+                type: String,
+                required: true,
+                trim: true,
+            },
+            value: {
+                type: String,
+                required: true,
+            },
+            _id: false,
+        },
+    ],
 }, { timestamps: true });
 
 module.exports = mongoose.model('Project', projectSchema);
