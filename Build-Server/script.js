@@ -16,6 +16,44 @@ const s3Client = new S3Client({
 
 const PROJECT_ID = process.env.PROJECT_ID
 
+// List of system environment variables to exclude from user-defined env vars
+const SYSTEM_ENV_VARS = [
+    'PROJECT_ID',
+    'GIT_REPOSITORY__URL',
+    'S3_BUCKET',
+    'INSTALL_CMD',
+    'BUILD_CMD',
+    'BUILD_ROOT',
+    'GITHUB_TOKEN',
+    'AWS_REGION',
+    'AWS_ACCESS_KEY_ID',
+    'AWS_SECRET_ACCESS_KEY',
+    'NODE_ENV',
+    'NODE_PATH',
+    'PATH',
+    'HOME',
+    'USER',
+    'TERM',
+    'SHELL',
+    'LANG',
+    'LC_ALL',
+    'PWD',
+    'NO_UPDATE_NOTIFIER',
+]
+
+function getUserEnvironmentVariables() {
+    const userEnv = {}
+    const envKeys = Object.keys(process.env)
+
+    for (const key of envKeys) {
+        if (!SYSTEM_ENV_VARS.includes(key) && !key.startsWith('npm_')) {
+            userEnv[key] = process.env[key]
+        }
+    }
+
+    return userEnv
+}
+
 function writeEvent(payload, level = 'info') {
     let ev = {};
     if (typeof payload === 'string') ev.message = payload;
@@ -83,13 +121,45 @@ async function findProjectRoot(startDir) {
     return startDir
 }
 
+function createEnvFile(projectRoot) {
+    try {
+        const userEnv = getUserEnvironmentVariables()
+        const envVars = Object.keys(userEnv)
+
+        if (envVars.length === 0) {
+            writeEvent('ℹ️ No environment variables provided by user')
+            return
+        }
+
+        const envContent = envVars
+            .map(key => {
+                const value = userEnv[key]
+                // Escape quotes and handle multiline values
+                const escapedValue = value.replace(/"/g, '\\"').replace(/\n/g, '\\n')
+                return `${key}="${escapedValue}"`
+            })
+            .join('\n')
+
+        const envPath = path.join(projectRoot, '.env')
+
+        // Always overwrite .env file with latest user-provided environment variables
+        fs.writeFileSync(envPath, envContent, 'utf8')
+        writeEvent(`✅ Created/Updated .env file at ${envPath} with ${envVars.length} environment variable(s)`)
+
+    } catch (err) {
+        writeEvent({
+            message: '❌ Error: Could not create/update .env file',
+            error: err?.message ?? String(err)
+        }, 'error')
+        throw err
+    }
+}
+
 async function init() {
     writeEvent('Executing script.js')
 
     if (!process.env.GITHUB_TOKEN) {
         writeEvent('Info: GITHUB_TOKEN not provided. Public repositories will work, but private repository access will fail.', 'warn')
-    } else {
-        writeEvent('GitHub token detected. Private repository access enabled.')
     }
 
     const outDirPath = path.join(__dirname, 'output')
@@ -100,6 +170,8 @@ async function init() {
     try {
         if (hasBuildScript(projectRoot)) {
             writeEvent('Build script found. Starting build process.');
+
+            createEnvFile(projectRoot)
 
             const installCmd = process.env.INSTALL_CMD || 'npm install'
             const buildCmd = process.env.BUILD_CMD || 'npm run build'
