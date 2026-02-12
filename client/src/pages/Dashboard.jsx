@@ -15,18 +15,58 @@ function Dashboard() {
         const token = localStorage.getItem('token')
         const storedUser = localStorage.getItem('user')
 
-        if (!token || !storedUser) {
+        if (!token) {
             navigate('/login')
             return
         }
 
-        try {
-            setUser(JSON.parse(storedUser))
-            fetchProjects(token)
-        } catch (err) {
-            navigate('/login')
+        const init = async () => {
+            if (storedUser) {
+                try {
+                    setUser(JSON.parse(storedUser))
+                    fetchProjects(token)
+                    return
+                } catch (err) {
+                    localStorage.removeItem('user')
+                }
+            }
+
+            try {
+                const currentUser = await fetchCurrentUser(token)
+                localStorage.setItem('user', JSON.stringify(currentUser))
+                setUser(currentUser)
+                fetchProjects(token)
+            } catch (err) {
+                localStorage.removeItem('token')
+                localStorage.removeItem('user')
+                navigate('/login')
+            }
         }
+
+        init()
     }, [navigate])
+
+    const fetchCurrentUser = async (token) => {
+        const response = await fetch(`${apiUrl}/api/auth/me`, {
+            method: 'GET',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        })
+
+        if (!response.ok) {
+            throw new Error(`Failed to fetch user: ${response.status} ${response.statusText}`)
+        }
+
+        const contentType = response.headers.get('content-type')
+        if (!contentType || !contentType.includes('application/json')) {
+            throw new Error('Invalid response format from server')
+        }
+
+        const data = await response.json()
+        return data.user || data
+    }
 
     const fetchProjects = async (token) => {
         try {
@@ -44,6 +84,8 @@ function Dashboard() {
 
             if (!response.ok) {
                 if (response.status === 401) {
+                    localStorage.removeItem('token')
+                    localStorage.removeItem('user')
                     navigate('/login')
                     return
                 }

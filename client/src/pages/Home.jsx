@@ -7,7 +7,8 @@ const Home = () => {
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        setIsLoggedIn(!!token);
+        const storedUser = localStorage.getItem('user');
+        setIsLoggedIn(Boolean(token && storedUser));
     }, []);
 
     const handleGetStarted = () => {

@@ -28,7 +28,8 @@ const Signup = () => {
 
     useEffect(() => {
         const token = localStorage.getItem('token');
-        if (token) {
+        const storedUser = localStorage.getItem('user');
+        if (token && storedUser) {
             navigate('/dashboard');
         }
     }, [navigate]);
