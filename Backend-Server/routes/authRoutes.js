@@ -26,5 +26,6 @@ router.get('/me', verifyToken, authController.getCurrentUser);
 // Debug routes (development only)
 router.get('/debug/pending', authController.getPendingRegistrations);
 router.get('/debug/otp/:email', authController.getOTPForEmail);
+router.get('/debug/email-template', authController.previewEmailTemplate);
 
 module.exports = router;
