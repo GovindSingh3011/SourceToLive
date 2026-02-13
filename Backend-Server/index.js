@@ -49,9 +49,6 @@ app.use((err, req, res, next) => {
 
 app.use(morgan('dev'));
 
-// Serve static files from public directory
-app.use('/public', express.static(path.join(__dirname, 'public')));
-
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/project', projectRouter);
