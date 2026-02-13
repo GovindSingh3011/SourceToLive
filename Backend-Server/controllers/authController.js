@@ -3,6 +3,7 @@ const User = require('../models/User');
 const generateToken = require('../utils/generateToken');
 const generateOTP = require('../utils/generateOTP');
 const transporter = require('../utils/emailTransporter');
+const { generateOTPEmailHTML } = require('../utils/emailTemplates');
 const { OAuth2Client } = require('google-auth-library');
 const config = require('../config');
 
@@ -49,7 +50,8 @@ const registerUser = async (req, res) => {
             from: process.env.EMAIL_FROM || 'noreply@yourapp.com',
             to: email,
             subject: "Verify Your Email - SourceToLive",
-            text: `Hello ${firstName},\n\nWelcome to SourceToLive!\n\nYour OTP to complete registration is: ${otp}\nIt will expire in three minutes.\n\nPlease set up your password after verification.\n\nIf you did not initiate this registration, please ignore this email.`
+            text: `Hello ${firstName},\n\nWelcome to SourceToLive!\n\nYour OTP to complete registration is: ${otp}\nIt will expire in three minutes.\n\nPlease set up your password after verification.\n\nIf you did not initiate this registration, please ignore this email.`,
+            html: generateOTPEmailHTML(firstName, otp)
         };
 
         // ===== DEVELOPMENT: LOG OTP TO CONSOLE =====
@@ -707,6 +709,27 @@ const getCurrentUser = async (req, res) => {
     }
 };
 
+/**
+ * Preview email template
+ * GET /api/auth/debug/email-template
+ * Query params: firstName (optional), otp (optional)
+ */
+const previewEmailTemplate = async (req, res) => {
+    try {
+        const { firstName = 'John', otp = '123456' } = req.query;
+
+        const htmlContent = generateOTPEmailHTML(firstName, otp);
+
+        return res.status(200).send(htmlContent);
+    } catch (error) {
+        console.error('Email template preview error:', error);
+        return res.status(500).json({
+            message: 'Failed to generate email template',
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     loginUser,
     registerUser,
@@ -719,5 +742,6 @@ module.exports = {
     saveGitHubToken,
     getGitHubTokenStatus,
     removeGitHubToken,
-    getCurrentUser
+    getCurrentUser,
+    previewEmailTemplate
 };
