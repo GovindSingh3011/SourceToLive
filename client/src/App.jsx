@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard'
 import ProjectDetail from './pages/ProjectDetail'
 import ProjectSettings from './pages/ProjectSettings'
 import Profile from './pages/Profile'
+import About from './pages/About'
 import NotFound from './pages/NotFound'
 import BackgroundPattern from './components/BackgroundPattern'
 import Navbar from './components/Navbar'
@@ -31,6 +32,7 @@ function AppContent() {
           <Route path="/signup" element={<Signup />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/about" element={<About />} />
           <Route path="/create-project" element={<CreateProject />} />
           <Route path="/project/:projectId" element={<ProjectDetail />} />
           <Route path="/project/:projectId/settings" element={<ProjectSettings />} />
