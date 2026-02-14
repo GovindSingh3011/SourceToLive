@@ -73,7 +73,7 @@ const Home = () => {
                     Deploy Your Projects
                     <br />
                     <span className="bg-linear-to-r from-[#3B7DC3] to-[#4CAF50] bg-clip-text text-transparent">
-                        From Source to Live
+                        From SourceToLive
                     </span>
                 </h1>
 
@@ -196,6 +196,31 @@ const Home = () => {
                         {isLoggedIn ? 'Go to Dashboard' : 'Start Deploying Now'}
                     </button>
                 </div>
+            </div>
+            <div className="my-10 sm:my-14 lg:my-16 relative overflow-hidden rounded-2xl sm:rounded-3xl bg-linear-to-r from-[#3B7DC3]/90 to-[#4CAF50]/90 p-0.5 shadow-[0_8px_32px_rgba(59,125,195,0.10)]">
+                <div className="relative z-10 flex flex-col sm:flex-row items-center justify-between gap-6 bg-white/90 backdrop-blur-xl rounded-2xl sm:rounded-3xl px-6 sm:px-10 py-8">
+                    <div className="flex-1 text-center sm:text-left">
+                        <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-[#3B7DC3]/10 border border-[#3B7DC3]/20 mb-3">
+                            <span className="text-xs font-bold text-[#3B7DC3] uppercase tracking-wide">About SourceToLive</span>
+                        </div>
+                        <div className="flex items-center justify-center sm:justify-start mb-2">
+                            <span className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-linear-to-br from-[#3B7DC3] to-[#4CAF50] text-white text-2xl shadow-lg mr-3">⚡</span>
+                            <h2 className="text-xl sm:text-2xl font-bold text-gray-900">From Code to Live, Effortlessly</h2>
+                        </div>
+                        <p className="text-sm sm:text-base text-gray-700 max-w-xl mx-auto sm:mx-0">
+                            SourceToLive is a deployment platform created by students for developers who want to ship fast. We automate the journey from Git commit to live application, making deployment simple, transparent, and reliable.
+                        </p>
+                    </div>
+                    <div className="shrink-0 mt-4 sm:mt-0 flex flex-col items-center">
+                        <Link to="/about">
+                            <button className="px-7 py-3 bg-linear-to-r from-[#3B7DC3] to-[#4CAF50] text-white font-bold rounded-xl shadow-lg hover:scale-105 hover:from-[#2A5F99] hover:to-[#388E3C] transition-all duration-300 text-base sm:text-lg">
+                                Know More
+                            </button>
+                        </Link>
+                    </div>
+                </div>
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-linear-to-br from-[#3B7DC3]/30 to-[#4CAF50]/30 rounded-full blur-2xl z-0"></div>
+                <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-linear-to-tr from-[#4CAF50]/20 to-[#3B7DC3]/10 rounded-full blur-2xl z-0"></div>
             </div>
         </div>
     );

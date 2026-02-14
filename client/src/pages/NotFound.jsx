@@ -31,7 +31,7 @@ const NotFound = () => {
             <div className="flex flex-col sm:flex-row gap-4 md:gap-6 w-full sm:w-auto justify-center">
                 <Link
                     to="/"
-                    className="inline-flex items-center justify-center gap-2 px-6 md:px-8 py-3 md:py-3.5 bg-gradient-to-r from-[#3B7DC3] to-[#2A5F99] text-white font-semibold rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-sm md:text-base"
+                    className="inline-flex items-center justify-center gap-2 px-6 md:px-8 py-3 md:py-3.5 bg-linear-to-r from-[#3B7DC3] to-[#2A5F99] text-white font-semibold rounded-lg hover:shadow-lg hover:-translate-y-1 transition-all duration-300 text-sm md:text-base"
                 >
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
