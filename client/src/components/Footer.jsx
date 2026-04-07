@@ -23,10 +23,16 @@ const Footer = () => {
                                 Home
                             </Link>
                             <Link
-                                to="/docs"
+                                to="/app-docs"
                                 className="text-gray-600 hover:text-[#3B7DC3] transition-colors text-sm font-medium"
                             >
-                                Docs
+                                Documentation
+                            </Link>
+                            <Link
+                                to="/api-docs"
+                                className="text-gray-600 hover:text-[#3B7DC3] transition-colors text-sm font-medium"
+                            >
+                                API Documentation
                             </Link>
                             <Link
                                 to="/about"

@@ -7,6 +7,7 @@ const Navbar = () => {
     const navigate = useNavigate();
     const [user, setUser] = useState(null);
     const [showDropdown, setShowDropdown] = useState(false);
+    const isLoggedIn = Boolean(user);
 
     useEffect(() => {
         const storedUser = localStorage.getItem('user');
@@ -32,7 +33,7 @@ const Navbar = () => {
             <div className="px-8 py-2">
                 <div className="flex items-center justify-between">
                     {/* Left Side - Logo */}
-                    <Link to="/" className="flex items-center">
+                    <Link to={isLoggedIn ? '/dashboard' : '/'} className="flex items-center">
                         <img src={Logo} alt="SourceToLive Logo" className="h-9 w-auto" />
                     </Link>
 
@@ -96,6 +97,16 @@ const Navbar = () => {
 
                                         {/* Menu Items */}
                                         <div className="py-2">
+                                            <Link
+                                                to="/"
+                                                className="flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-gray-700 hover:bg-[#3B7DC3]/10 hover:text-[#2A5F99] rounded-lg transition-all duration-150"
+                                                onClick={() => setShowDropdown(false)}
+                                            >
+                                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10l9-7 9 7v10a1 1 0 01-1 1h-5v-6H9v6H4a1 1 0 01-1-1V10z" />
+                                                </svg>
+                                                Home
+                                            </Link>
                                             <Link
                                                 to="/dashboard"
                                                 className="flex items-center gap-3 px-4 py-2.5 text-[13px] font-medium text-gray-700 hover:bg-[#3B7DC3]/10 hover:text-[#2A5F99] rounded-lg transition-all duration-150"
