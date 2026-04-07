@@ -9,6 +9,8 @@ import ProjectDetail from './pages/ProjectDetail'
 import ProjectSettings from './pages/ProjectSettings'
 import Profile from './pages/Profile'
 import About from './pages/About'
+import APIDocumentation from './pages/APIDocumentation'
+import AppDocumentation from './pages/AppDocumentation'
 import NotFound from './pages/NotFound'
 import BackgroundPattern from './components/BackgroundPattern'
 import Navbar from './components/Navbar'
@@ -33,6 +35,8 @@ function AppContent() {
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/about" element={<About />} />
+          <Route path="/api-docs" element={<APIDocumentation />} />
+          <Route path="/app-docs" element={<AppDocumentation />} />
           <Route path="/create-project" element={<CreateProject />} />
           <Route path="/project/:projectId" element={<ProjectDetail />} />
           <Route path="/project/:projectId/settings" element={<ProjectSettings />} />

@@ -2,6 +2,7 @@ const express = require('express');
 const morgan = require('morgan');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs/promises');
 const mongoose = require('mongoose');
 const os = require('os');
 const config = require('./config');
@@ -53,6 +54,28 @@ app.use(morgan('dev'));
 app.use('/api/auth', authRoutes);
 app.use('/api/project', projectRouter);
 app.use('/api/webhook', webhookRoutes);
+
+app.get('/api/api-documentation', async (req, res) => {
+  try {
+    const docPath = path.resolve(__dirname, '../Docs/API_DOCUMENTATION.md');
+    const content = await fs.readFile(docPath, 'utf8');
+    return res.status(200).json({ content });
+  } catch (error) {
+    console.error('API documentation route error:', error.message);
+    return res.status(404).json({ message: 'API documentation not found' });
+  }
+});
+
+app.get('/api/app-documentation', async (req, res) => {
+  try {
+    const docPath = path.resolve(__dirname, '../Docs/APP_DOCUMENTATION.md');
+    const content = await fs.readFile(docPath, 'utf8');
+    return res.status(200).json({ content });
+  } catch (error) {
+    console.error('App documentation route error:', error.message);
+    return res.status(404).json({ message: 'App documentation not found' });
+  }
+});
 
 // Generic error handler
 app.use((err, req, res, next) => {
