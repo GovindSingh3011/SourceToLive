@@ -506,16 +506,17 @@ Authorization: Bearer <token>
 {
   "message": "User retrieved successfully",
   "user": {
-    "userId": 1000,
-    "email": "john.doe@example.com",
-    "firstName": "John",
-    "lastName": "Doe",
-    "role": "user",
-    "isActive": true,
-    "avatar": "https://...",
-    "phone": "+1234567890",
-    "address": "123 Main St, City, State"
-  }
+        "userId": "1000",
+        "firstName": "John",
+        "lastName": "Doe",
+        "email": "john.doe@example.com",
+        "role": "user",
+        "authProvider": "OAuth2.0",
+        "githubAccessToken":  "null(default)",
+        "avatar": "https://...",
+        "phone": "+1234567890",
+        "address": "123 Main St, City, State"
+      }
 }
 ```
 
@@ -616,6 +617,10 @@ https://frontend.com/auth/callback?token=<jwt_token>&success=true
   "githubTokenValid": true
 }
 ```
+**Other Responses**:
+
+- 200: Token is invalid or expired / No GitHub token configured
+- 404: User not found
 
 ---
 
@@ -652,6 +657,7 @@ https://frontend.com/auth/callback?token=<jwt_token>&success=true
 ```json
 {
   "gitRepositoryUrl": "https://github.com/username/repo.git",
+  "project_id": "lowercase letters, numbers, hyphens only (regex:/^[a-z0-9-]+$/)",
   "buildConfig": {
     "installCmd": "npm install",
     "buildCmd": "npm run build",
@@ -679,6 +685,8 @@ https://frontend.com/auth/callback?token=<jwt_token>&success=true
     "projectId": "proj_1693641600000",
     "gitRepositoryUrl": "https://github.com/username/repo.git",
     "status": "queued",
+    "lastCommitHash": "lastCommitHash",
+    "lastCommitMessage": "lastCommitMessage",
     "deployUrl": null,
     "autoRedeploy": false,
     "owner": {
@@ -703,9 +711,8 @@ https://frontend.com/auth/callback?token=<jwt_token>&success=true
 **Error Responses**:
 
 - 400: Missing or invalid repository URL
-- 400: Invalid build configuration
-- 401: Unauthorized
 - 500: Failed to queue build task
+- 502: Failed to queue ECS task
 
 ---
 
@@ -926,7 +933,7 @@ data: <log_line>
 
 **Error Responses**:
 
-- 404: Project not found
+- 404: ProjectId parameter not found
 - 500: CloudWatch connection error
 
 ---
@@ -971,7 +978,7 @@ data: <log_line>
 
 **Error Responses**:
 
-- 404: Project or logs not found
+- 404: Project parameters not found
 - 500: S3 retrieval error
 
 ---
@@ -1002,7 +1009,7 @@ data: <log_line>
     "projectId": "proj_1693641600000",
     "status": "queued",
     "triggeredAt": "2024-01-15T10:50:00Z",
-    "estimatedDuration": "10-15 minutes"
+    "commitHash": "abc123def456 successful"
   }
 }
 ```
@@ -1052,10 +1059,10 @@ data: <log_line>
 
 **Error Responses**:
 
-- 400: Invalid provider or branch
+- 400: GitHub access token not found/Failed to create webhook
 - 401: Unauthorized
-- 404: Project not found
-- 500: GitHub API error
+- 404: Project/User not found
+- 500: Failed to setup webhook
 
 ---
 
@@ -1071,14 +1078,14 @@ data: <log_line>
 
 ```json
 {
-  "message": "Webhook deleted successfully"
+  "message": "✅ GitHub webhook deleted successfully"
 }
 ```
 
 **Error Responses**:
 
 - 401: Unauthorized
-- 404: Project or webhook not found
+- 404: Project/User not found
 
 ---
 
@@ -1134,9 +1141,9 @@ X-Hub-Signature-256: sha256=abc123...
 
 **Error Responses**:
 
+- 400: Auto-redeploy not enabled for this project
 - 401: Invalid signature
 - 404: Project not found
-- 500: Deployment queue error
 
 ---
 
@@ -1158,12 +1165,18 @@ X-Gitlab-Token: <webhook_token>
 
 ```json
 {
-  "message": "Webhook processed successfully",
+  "message": "GitLab webhook: Triggering redeploy for project",
   "deployment": {
     /* similar to GitHub */
   }
 }
 ```
+
+**Error Responses**:
+
+- 401: Invalid tooken
+- 404: Project not found
+- 500: Failed to process webhook
 
 ---
 
@@ -1187,7 +1200,7 @@ X-Gitlab-Token: <webhook_token>
 
 ```json
 {
-  "message": "Auto-redeploy enabled successfully",
+  "message": "Redeploy triggered successfully",
   "autoRedeploy": true
 }
 ```
@@ -1210,6 +1223,12 @@ X-Gitlab-Token: <webhook_token>
   "autoRedeploy": false
 }
 ```
+
+**Error Responses**:
+
+- 400: Invalid git URL
+- 401: Authentication failed User ID not found in token
+- 404: Project/User not found
 
 ---
 
@@ -1237,6 +1256,11 @@ X-Gitlab-Token: <webhook_token>
   }
 }
 ```
+
+**Error Responses**:
+
+- 404: Project not found
+- 500: Failed to get webhook status
 
 ---
 
@@ -1281,9 +1305,10 @@ X-Gitlab-Token: <webhook_token>
 
 **Error Responses**:
 
-- 401: Unauthorized or GitHub token not available
-- 403: GitHub token expired
-- 500: GitHub API error
+- 400: GitHub access token not found
+- 401: User not authenticated/GitHub authentication failed
+- 429: GitHub API error
+- 500: Failed to fetch repositories
 
 ---
 

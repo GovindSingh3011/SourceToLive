@@ -1,675 +1,838 @@
-# SourceToLive Application Documentation
+# SourceToLive App Documentation
+
+**Version:** 1.0  
+**Last Updated:** April 8, 2026
 
 ## Table of Contents
 
-- [Getting Started](#getting-started)
-- [User Authentication](#user-authentication)
-- [Dashboard Overview](#dashboard-overview)
-- [Project Management](#project-management)
-- [Deployment](#deployment)
-- [Monitoring & Analytics](#monitoring--analytics)
-- [Project Settings](#project-settings)
-- [User Profile](#user-profile)
-- [Troubleshooting](#troubleshooting)
-- [Keyboard Shortcuts](#keyboard-shortcuts)
+1. [Introduction & App Overview](#1-introduction--app-overview)
+2. [Purpose & Scope](#2-purpose--scope)
+3. [Application Access & Environments](#3-application-access--environments)
+4. [Routes & Pages](#4-routes--pages)
+5. [Authentication & Session Handling](#5-authentication--session-handling)
+6. [Frontend Architecture Overview](#6-frontend-architecture-overview)
+7. [Backend & System Mapping](#7-backend--system-mapping)
+8. [Deployment Lifecycle](#8-deployment-lifecycle)
+9. [Technology Stack](#9-technology-stack)
+10. [Navigation & Layout](#10-navigation--layout)
+11. [Primary User Flows](#11-primary-user-flows)
+12. [Example User Journey](#12-example-user-journey)
+13. [Page Guide](#13-page-guide)
+14. [Data Handling & State Management](#14-data-handling--state-management)
+15. [Error Handling & Empty States](#15-error-handling--empty-states)
+16. [Limitations](#16-limitations)
+17. [Security Considerations](#17-security-considerations)
+18. [Responsive Design & Accessibility](#18-responsive-design--accessibility)
+19. [Team & Contributors](#19-team--contributors)
+20. [Support & Reference Links](#20-support--reference-links)
 
 ---
 
-## Getting Started
+## 1. Introduction & App Overview
 
-### What is SourceToLive?
+SourceToLive is a browser-based deployment experience that turns a connected Git repository into a managed project inside the frontend interface. This documentation focuses on the frontend application only: what users see, how they move between pages, how deployment actions are initiated, and how the UI reflects the platform described in the project report.
 
-SourceToLive is a cloud deployment platform that simplifies the process of deploying, managing, and monitoring your applications. With SourceToLive, you can:
+The frontend is intentionally dashboard-driven and supports the main product flow described in the report: connect a repository, configure a build, deploy, and monitor the result. It also exposes the documentation pages used by the app itself.
 
-- Deploy applications from GitHub repositories
-- Monitor real-time deployment status
-- Manage multiple projects from a single dashboard
-- Easily scale and configure your applications
-- Integrate with GitHub and other cloud services
+The UI is centered around:
 
-### System Requirements
-
-- Modern web browser (Chrome, Firefox, Safari, Edge)
-- GitHub account (for repository integration)
-- Internet connection
-- Basic understanding of Git and cloud deployments
-
-### First Steps
-
-1. Visit the SourceToLive homepage
-2. Click "Sign Up" or "Login"
-3. Authenticate using GitHub
-4. Complete your profile setup
-5. Create your first project
+- A marketing landing page for new users
+- Email/password signup and login
+- A project dashboard with search and project cards
+- A three-step project creation flow
+- Project detail, settings, and profile pages
+- In-app API and app documentation readers
 
 ---
 
-## User Authentication
+## 2. Purpose & Scope
 
-### Login
+### Core Objectives
 
-**Via GitHub OAuth:**
+- Present a simple path from repository to live deployment
+- Let users create and manage deployment projects from the UI
+- Surface deployment status, deployment URLs, and logs
+- Provide account management and GitHub integration controls
+- Keep the docs visible inside the app through dedicated routes
 
-1. Click "Login with GitHub" on the login page
-2. You'll be redirected to GitHub's authorization page
-3. Authorize SourceToLive to access your repositories
-4. You'll be logged in automatically
+### What This App Covers
 
-**Email-based Authentication:**
+- Landing and about pages
+- Login and signup flows
+- Dashboard search and project listing
+- Create project wizard
+- Project detail and settings screens
+- Profile and GitHub connection management
+- Markdown-based app and API documentation pages
 
-1. Enter your email address
-2. Receive an OTP via email
-3. Enter the OTP to verify
-4. Set your password
+### What This App Does Not Cover
 
-### Sign Up
-
-**New User Registration:**
-
-1. Click "Sign Up" on the homepage
-2. Choose authentication method (GitHub or Email)
-3. Complete the authorization process
-4. Set up your profile information
-5. Accept terms and conditions
-6. Create your account
-
-### Logout
-
-1. Click your profile avatar in the top right
-2. Click "Logout"
-3. You'll be redirected to the homepage
-
-### Security
-
-- Never share your authentication tokens
-- Keep your GitHub credentials secure
-- Enable two-factor authentication on GitHub
-- Review connected apps in your GitHub settings regularly
+- Backend route implementation details
+- AWS infrastructure provisioning steps
+- Docker build internals
+- Database schema definitions
 
 ---
 
-## Dashboard Overview
+## 3. Application Access & Environments
 
-### Main Dashboard
+### Development
 
-The dashboard is your central hub for managing all your projects. It displays:
-
-**Key Sections:**
-
-1. **Projects Overview**
-   - Total number of projects
-   - Active deployments
-   - Recent activities
-   - Quick access to all projects
-
-2. **Recent Projects**
-   - List of recently accessed projects
-   - Current deployment status
-   - Last deployment date
-   - Quick actions (view, settings, deploy)
-
-3. **Quick Actions**
-   - Create new project button
-   - View all projects
-   - Access settings
-   - View activity log
-
-4. **Activity Feed**
-   - Real-time deployment updates
-   - Team activities
-   - System notifications
-   - Build logs
-
-### Navigation
-
-- **Top Navigation Bar**: Links to Dashboard, Projects, Profile, Docs
-- **Sidebar**: Quick access to main features (collapsible on mobile)
-- **Search Bar**: Find projects quickly
-- **User Menu**: Profile, Settings, Logout
-
-### Dashboard Widgets
-
-- **Deployment Status**: Shows active and completed deployments
-- **Performance Metrics**: Quick view of project health
-- **Alerts**: Important notifications and issues
-- **Shortcuts**: Quick links to frequently used features
-
----
-
-## Project Management
-
-### Creating a Project
-
-**Step 1: Start Creation**
-
-1. Click "Create Project" button
-2. Select project type (Web App, API, Static Site, etc.)
-3. Choose your deployment environment
-
-**Step 2: Connect Repository**
-
-1. Select GitHub as your source
-2. Authorize if needed
-3. Choose your repository
-4. Select the branch to deploy
-
-**Step 3: Configure Settings**
-
-1. Set environment variables
-2. Configure build commands
-3. Set deployment settings
-4. Configure domain and SSL
-
-**Step 4: Review and Create**
-
-1. Review all settings
-2. Click "Create Project"
-3. Watch deployment progress
-
-### Project List View
-
-Access all your projects from the Projects page:
-
-- **Grid View**: Visual project cards
-- **List View**: Detailed project information
-- **Filter Options**: By status, type, date
-- **Search**: Find projects by name
-
-### Project Statuses
-
-- **Active**: Project is running and accessible
-- **Deploying**: Deployment in progress
-- **Failed**: Last deployment failed
-- **Paused**: Project is temporarily stopped
-- **Archived**: Old project no longer active
-
-### Project Details Page
-
-View comprehensive information about a specific project:
-
-1. **Overview Tab**
-   - Project name and description
-   - Current status
-   - Deployment history
-   - Performance metrics
-
-2. **Deployments Tab**
-   - List of all deployments
-   - Deployment logs
-   - Rollback options
-   - Deployment duration
-
-3. **Logs Tab**
-   - Build logs
-   - Runtime logs
-   - Error logs
-   - Custom log viewer
-
-4. **Environment Tab**
-   - Environment variables
-   - Secrets management
-   - Configuration files
-
----
-
-## Deployment
-
-### Understanding Deployments
-
-A deployment is when your code is built and deployed to the cloud:
-
-1. **Source Code** → 2. **Build** → 3. **Test** → 4. **Deploy** → 5. **Live**
-
-### How Deployments Work
-
-**Automatic Deployments:**
-
-- Triggered on push to configured branch
-- Runs build scripts defined in project
-- Deploys to cloud infrastructure
-- Updates live application
-
-**Manual Deployments:**
-
-- Trigger from dashboard
-- Choose specific branch
-- Run manual build process
-- Deploy immediately
-
-### Starting a Deployment
-
-**Automatic:**
-
-1. Push code to your repository
-2. Deployment starts automatically
-3. Monitor progress on dashboard
-
-**Manual:**
-
-1. Go to project dashboard
-2. Click "Deploy" button
-3. Select branch (optional)
-4. Click "Start Deployment"
-5. Monitor deployment progress
-
-### Deployment Logs
-
-View detailed deployment information:
-
-1. Click deployment in history
-2. View real-time logs
-3. Check build output
-4. Review any errors
-
-**Log Sections:**
-
-- Git checkout
-- Dependency installation
-- Build process
-- Tests execution
-- Deployment process
-
-### Rollback
-
-Revert to a previous deployment:
-
-1. Go to Deployments tab
-2. Click "More Options" on previous deployment
-3. Click "Rollback"
-4. Confirm the action
-5. Wait for rollback to complete
-
----
-
-## Monitoring & Analytics
-
-### Performance Dashboard
-
-Track your application's performance:
-
-**Metrics Displayed:**
-
-- Response time
-- Error rate
-- Uptime percentage
-- Request count
-- Load times
-
-### Real-time Monitoring
-
-- **Active Users**: Current number of users
-- **Request Rate**: Requests per minute
-- **Error Rate**: Percentage of failed requests
-- **Resource Usage**: CPU and memory usage
-
-### Alerts
-
-Set up automated alerts for:
-
-- Deployment failures
-- High error rates
-- Performance degradation
-- Uptime issues
-- Quota limits
-
-### Logs and Debugging
-
-**Access Application Logs:**
-
-1. Go to project Settings
-2. Click "Logs" tab
-3. Filter by date, level, or service
-4. Search for specific errors
-
-**Log Levels:**
-
-- **ERROR**: Critical issues
-- **WARN**: Warnings
-- **INFO**: Informational messages
-- **DEBUG**: Debug information
-
----
-
-## Project Settings
-
-### Basic Settings
-
-**Project Information:**
-
-- Project name
-- Description
-- Repository URL
-- Default branch
-
-**Domains:**
-
-- Primary domain
-- Custom domains
-- SSL certificates
-- Domain management
-
-### Build & Deploy
-
-**Build Configuration:**
-
-```
-- Build command: npm run build
-- Output directory: /dist
-- Node version: 18.x
-- Package manager: npm
+```text
+http://localhost:5173
 ```
 
-**Deploy Configuration:**
+### Production
 
-- Deployment region
-- Environment preset
-- Resource allocation
-- Auto-scaling options
+```text
+Production frontend URL
+```
 
-### Environment Variables
+### Backend API Base
 
-**Add Variables:**
+The frontend reads the API host from `VITE_API_URL` and falls back to:
 
-1. Go to Settings → Environment
-2. Click "Add Variable"
-3. Enter key and value
-4. Mark as secret if needed
-5. Save changes
+```text
+http://localhost:3000
+```
 
-**Available in:**
+### Environment Notes
 
-- Build process
-- Runtime environment
-- Application code
-
-### Integrations
-
-**Connected Services:**
-
-- GitHub repository
-- Custom webhooks
-- Third-party services
-- Notification channels
-
-**Configure Webhook:**
-
-1. Go to Settings → Integrations
-2. Click "Add Webhook"
-3. Enter webhook URL
-4. Select events
-5. Test and save
-
-### Advanced Settings
-
-**Custom Domain:**
-
-1. Go to Settings → Domains
-2. Add your custom domain
-3. Update DNS records
-4. Verify domain ownership
-5. Enable automatic SSL
-
-**Security:**
-
-- CORS configuration
-- Headers management
-- Rate limiting
-- IP restrictions
+| Environment | Frontend URL | Backend API URL | Purpose |
+| --- | --- | --- | --- |
+| Development | http://localhost:5173 | http://localhost:3000 | Local development |
+| Production | Deployed frontend address | Production API endpoint | Live user access |
 
 ---
 
-## User Profile
+## 4. Routes & Pages
 
-### Profile Information
+The frontend routes are defined in [client/src/App.jsx](../client/src/App.jsx).
 
-Edit your profile details:
-
-1. Click profile avatar (top right)
-2. Click "Profile"
-3. Update information:
-   - Display name
-   - Email address
-   - Profile picture
-   - Bio/About section
-
-4. Click "Save Changes"
-
-### Account Settings
-
-**Email Management:**
-
-- Verify primary email
-- Add backup emails
-- Set email preferences
-- Update email address
-
-**Password:**
-
-- Change password
-- Set password requirements
-- Enable two-factor authentication
-
-**Notifications:**
-
-- Email notifications
-- Browser notifications
-- Notification frequency
-- Alert preferences
-
-### Connected Accounts
-
-Link external services to your account:
-
-- **GitHub**: Source code management
-- **Google**: OAuth authentication
-- **Other Providers**: Additional integrations
-
-**To Connect:**
-
-1. Go to Settings → Connected Accounts
-2. Click "Connect" on service
-3. Authorize access
-4. Confirm connection
-
-### Team Management
-
-**Invite Team Members:**
-
-1. Go to Team settings
-2. Click "Invite Member"
-3. Enter email address
-4. Select role:
-   - **Admin**: Full access
-   - **Developer**: Deploy and configure
-   - **Viewer**: Read-only access
-
-5. Send invitation
-
-**Manage Members:**
-
-- View all team members
-- Change member roles
-- Remove members
-- View member activity
+| Route | Page | Purpose |
+| --- | --- | --- |
+| `/` | Home | Marketing landing page |
+| `/login` | Login | Sign in with credentials and OAuth |
+| `/signup` | Signup | Account registration and OTP flow |
+| `/dashboard` | Dashboard | Project list and search |
+| `/create-project` | CreateProject | Three-step deployment wizard |
+| `/project/:projectId` | ProjectDetail | Project overview and logs |
+| `/project/:projectId/settings` | ProjectSettings | Project configuration |
+| `/profile` | Profile | Account and GitHub connection management |
+| `/about` | About | Product story and project background |
+| `/api-docs` | APIDocumentation | API documentation viewer |
+| `/app-docs` | AppDocumentation | App documentation viewer |
+| `*` | NotFound | Fallback for unknown routes |
 
 ---
 
-## Troubleshooting
+## 5. Authentication & Session Handling
 
-### Common Issues
+### Session Storage
 
-**Deployment Failures**
+The app keeps authentication state in `localStorage` after a successful login or signup:
 
-_Problem: Deployment fails during build_
+- `token` for authenticated API requests
+- `user` for displaying account details in the UI
 
-- Check build logs for errors
-- Verify environment variables
-- Confirm dependencies are correct
-- Check Node.js/package versions
+### Session Behavior
 
-_Problem: Deployment succeeds but app not working_
+- Protected pages redirect unauthenticated users to `/login`
+- Login and signup pages are hidden from the main shell header and footer
+- Dashboard, project, and profile pages revalidate the stored token on load
 
-- Check application logs
-- Verify environment variables
-- Review recent code changes
-- Check resource limits
+### Authentication Methods in the UI
 
-**Connection Issues**
+- Email and password login
+- Email-based signup with OTP verification
+- GitHub OAuth sign-in and repository integration
 
-_Problem: Cannot access deployed app_
+### Security Behavior
 
-- Verify domain configuration
-- Check DNS records
-- Clear browser cache
-- Try incognito mode
-- Check firewall/network
-
-**GitHub Integration**
-
-_Problem: Repository not showing_
-
-- Re-authenticate GitHub
-- Check repository access
-- Verify repository is public/accessible
-- Try refreshing page
-
-_Problem: Webhooks not triggering_
-
-- Verify webhook configuration
-- Check GitHub webhook settings
-- Ensure correct event types
-- Verify payload URL
-
-### Getting Help
-
-**Support Resources:**
-
-- Check API documentation at `/api-docs`
-- View app guide at `/app-docs`
-- Review deployment logs
-- Contact support team
-
-**Debug Mode:**
-
-1. Open browser DevTools (F12)
-2. Check Console for errors
-3. Monitor Network tab
-4. Check Application storage
+- Authenticated requests send `Authorization: Bearer <token>`
+- GitHub integration status is queried separately from account profile data
+- The UI avoids exposing raw tokens on screen
 
 ---
 
-## Keyboard Shortcuts
+## 6. Frontend Architecture Overview
 
-| Shortcut       | Action                  |
-| -------------- | ----------------------- |
-| `Cmd/Ctrl + K` | Open command palette    |
-| `Cmd/Ctrl + /` | Show keyboard shortcuts |
-| `Cmd/Ctrl + B` | Toggle sidebar          |
-| `Cmd/Ctrl + D` | Go to dashboard         |
-| `Cmd/Ctrl + P` | Go to projects          |
-| `Cmd/Ctrl + S` | Save settings           |
-| `Esc`          | Close modals/menus      |
+The main application interface is assembled in [client/src/App.jsx](../client/src/App.jsx). The structure is simple and deliberate:
 
-### Command Palette
+- `Router` wraps all routes
+- `BackgroundPattern` provides the page backdrop
+- `Navbar` and `Footer` are hidden on auth pages
+- `useLocation` is used to reset scroll position on navigation
+- Page-level routing controls the whole experience
 
-Open with `Cmd/Ctrl + K` to:
+This keeps the app easy to reason about while still supporting multiple flows and documentation pages.
 
-- Search projects
-- Navigate pages
-- Execute actions
-- Access settings
-- Run commands
+The report describes a modular deployment platform with backend, build, log, and reverse-proxy services. The frontend mirrors that idea by separating the user-facing workflow into clear screens: repository input, configuration, logs, project detail, and settings.
 
 ---
 
-## Tips & Best Practices
+## 7. Backend & System Mapping
 
-### Deployment Tips
+The frontend communicates with multiple backend services to orchestrate the complete deployment workflow. This section maps frontend user actions to corresponding backend services and infrastructure.
 
-✅ **DO:**
+### Frontend to Backend Service Mapping
 
-- Use meaningful commit messages
-- Test locally before pushing
-- Review changes before deployment
-- Monitor first deployment
-- Keep dependencies updated
+| Frontend Action | Backend Service | API Route | Description |
+| --- | --- | --- | --- |
+| Sign up / Login | Backend Server (Auth) | `POST /api/auth/signup`, `POST /api/auth/login` | User authentication and session management |
+| List projects | Backend Server (Project) | `GET /api/project` | Retrieve user's projects from MongoDB |
+| Create project | Backend Server (Project) + Build Server + ECS | `POST /api/project` | Validate and queue ECS build task |
+| Fetch GitHub repos | Backend Server (Auth) | `GET /api/project/repositories/github` | Retrieve user's GitHub repositories via OAuth token |
+| View deployment logs | Log Server (CloudWatch) | `GET /api/project/:projectId/logs/stream` | Stream live build logs via EventSource (CloudWatch Logs) |
+| Archive old logs | Log Server (S3) | `GET /api/project/:projectId/logs/archive` | Retrieve archived logs from S3 bucket |
+| Redeploy project | Backend Server + ECS | `POST /api/project/:projectId/redeploy` | Launch new ECS task for same repository |
+| Update project settings | Backend Server | `PUT /api/project/:projectId` | Modify project build configuration |
+| Auto-deploy via webhook | Backend Server + Webhook | `POST /api/webhook/github` | GitHub webhook triggers automatic redeploy |
+| View live deployment | Reverse Proxy (EC2) | `https://<projectId>.<domain>` | Access deployed application via subdomain |
 
-❌ **DON'T:**
+### Backend Services Overview
 
-- Commit secrets or credentials
-- Deploy without testing
-- Ignore deployment errors
-- Leave old deployments
-- Use very large environment variables
-
-### Performance Tips
-
-✅ **DO:**
-
-- Optimize images and assets
-- Enable caching headers
-- Use CDN for static files
-- Monitor performance metrics
-- Set up alerting
-
-❌ **DON'T:**
-
-- Deploy unoptimized code
-- Ignore error logs
-- Use blocking operations
-- Store large files in app
-- Ignore deprecation warnings
-
-### Security Tips
-
-✅ **DO:**
-
-- Use environment variables for secrets
-- Keep dependencies updated
-- Use strong passwords
-- Enable CORS carefully
-- Review connected apps
-
-❌ **DON'T:**
-
-- Commit secrets to repository
-- Ignore security warnings
-- Use weak credentials
-- Allow unnecessary CORS origins
-- Share tokens or keys
+- **Backend Server** (Node.js + Express): API endpoint management, user authentication, project orchestration, GitHub integration
+- **Build Server** (Docker in ECS): Clones repository, executes install/build commands, uploads output to S3
+- **Log Server** (CloudWatch Logs + S3): Streams live logs during build, archives completed logs
+- **Reverse Proxy** (EC2): Routes subdomain requests to S3-hosted static builds
+- **Database** (MongoDB Atlas): Stores user accounts, project metadata, deployment history
 
 ---
 
-## FAQ
+## 8. Deployment Lifecycle
 
-**Q: How often can I deploy?**
-A: You can deploy as often as needed. Automatic deployments are triggered on each push.
+This section details the complete workflow from user action to live deployment. Each step is grounded in the actual system implementation.
 
-**Q: Can I roll back to previous versions?**
-A: Yes, you can rollback to any previous deployment from the deployments tab.
+### Step-by-Step Deployment Pipeline
 
-**Q: Is SSL included?**
-A: Yes, automatic SSL certificates are provided for all deployments.
+**1. User Submits Repository**
+- User navigates to Create Project (Step 1: Git URL Input)
+- Enters GitHub repository URL and project identifier
+- Frontend validates format and passes to backend
 
-**Q: Can I use a custom domain?**
-A: Yes, add and configure custom domains in project settings.
+**2. Backend Validation**
+- Backend Server receives request at `/api/project` (POST)
+- Validates:
+  - PROJECT_ID format (lowercase, numbers, hyphens only)
+  - Git URL is a valid GitHub repository
+  - No duplicate project with same PROJECT_ID for current user
+- Fetches user's GitHub access token from database
+- Retrieves last commit info from GitHub API for metadata
 
-**Q: How much storage do I get?**
-A: Storage limits depend on your plan. Check account settings for details.
+**3. Build Task Queued to ECS**
+- Backend triggers a containerized build process using project configuration and repository details.
 
-**Q: Can I scale my applications?**
-A: Yes, configure auto-scaling in project settings.
+**4. Build Server Executes Build**
+- Build Server container starts
+- Clones repository using Git (with GitHub token for auth if needed)
+- Executes install command (e.g., `npm install`, `pip install`)
+- Executes build command to generate production output
+- Filters and exports user-defined environment variables
+- Logs each step to CloudWatch Logs stream
+
+**5. Live Log Streaming**
+- Frontend establishes EventSource connection at `/api/project/:projectId/logs/stream`
+- Reads from CloudWatch Logs in real-time
+- Updates UI with log entries as they arrive
+- User watches build progress live in Step 3 (Deployment Logs)
+
+**6. Output Uploaded to S3**
+- Build Server uploads all output files to S3 bucket
+- Files organized under path: `<projectId>/index.html`, `<projectId>/css/`, etc.
+- Files configured for public read access
+- Build Server updates project status to "finished" or "failed"
+
+**7. Logs Archived**
+- Backend flushes CloudWatch Logs to S3 at `__logs/<projectId>.log`
+- CloudWatch log stream deleted after archival
+- Archived logs available via `/api/project/:projectId/logs/archive`
+
+**8. Deployment URL Activated**
+- Project record stored in MongoDB with status and URL
+- Deployment URL: `https://<projectId>.<APP_DOMAIN>` (e.g., `https://my-app.sourcetolive.dev`)
+- Reverse Proxy routes subdomain requests to S3 bucket
+- User can access live deployment immediately after build completes
+
+**9. Project Visible in Dashboard**
+- Project appears in user's dashboard project list
+- Status shows "finished" or "failed"
+- Project card displays deployment URL and timestamps
+- User can view logs, redeploy, or adjust settings
+
+### Deployment States
+
+| Status | Meaning | User Can... |
+| --- | --- | --- |
+| `queued` | Waiting for build task to start | View queued status in logs |
+| `running` | Build in progress | Watch live logs |
+| `finished` | Build completed successfully | Access live deployment URL |
+| `failed` | Build completed with errors | View error logs, try redeploy |
 
 ---
 
-## Contact & Support
+---
 
-For issues or questions:
+## 9. Technology Stack
 
-- 📧 Email: contact.sourcetolive@gmail.com
-- 🔗 Website: https://sourcetolive.dev
+SourceToLive is built on a full-stack architecture spanning frontend, backend, build infrastructure, and cloud services.
+
+### Complete Technology Stack
+
+| Layer | Technology | Purpose |
+| --- | --- | --- |
+| **Frontend** | React | UI rendering and interactivity |
+| **Frontend** | Vite | Development server and production bundling |
+| **Frontend** | react-router-dom | Routing and navigation |
+| **Frontend** | EventSource | Live log streaming from backend |
+| **Frontend** | ReactMarkdown | In-app documentation rendering |
+| **Backend** | Node.js + Express | API server and business logic |
+| **Backend** | MongoDB Atlas | User accounts, project metadata, deployment history |
+| **Backend** | JWT (jsonwebtoken) | Stateless authentication |
+| **Backend** | GitHub OAuth | Third-party authentication and API access |
+| **Build System** | Docker | Containerized build environment |
+| **Build System** | Node.js (in container) | Running install and build commands |
+| **Cloud - Compute** | AWS ECS (Fargate) | Serverless container orchestration for builds |
+| **Cloud - Logging** | AWS CloudWatch Logs | Real-time build log streaming |
+| **Cloud - Storage** | AWS S3 | Build output storage and CDN-ready assets |
+| **Cloud - Networking** | AWS EC2 | Reverse proxy and subdomain routing |
+| **Deployment** | GitHub API | Repository access and webhook integration |
+| **Deployment** | Cloudflare Tunnel | Secure local developer access (optional) |
+
+### Supporting UI Patterns
+
+- Conditional rendering for auth vs non-auth pages
+- Scroll-to-top on route change
+- Markdown documentation with table-of-contents navigation
+- Responsive cards, panels, and form layouts
 
 ---
 
-_Last updated: 2026-04-07_
-_SourceToLive Application Documentation_
+## 10. Navigation & Layout
+
+### Global Layout
+
+- Background pattern on all pages
+- Top navigation for signed-in and public areas
+- Footer visible outside auth pages
+- Centered content area with responsive padding
+
+### Navigation Model
+
+- Public users start on the home page
+- Authentication routes lead into the dashboard flow
+- The dashboard branches into project creation, project detail, and project settings
+- Documentation pages are available directly from the app shell
+
+### Visual Direction
+
+The UI uses a clean, high-contrast style with soft gradients, glass-like cards, and strong section hierarchy. That matches the project report theme of clarity, automation, and transparency without turning the interface into a generic dashboard clone.
+
+---
+
+## 11. Primary User Flows
+
+### Discover and Enter
+
+1. Visit the home page
+2. Read the product summary and feature highlights
+3. Choose to sign up or log in
+
+### Authenticate
+
+1. Create an account through signup and OTP verification
+2. Or sign in directly with existing credentials
+3. Optionally connect GitHub from the profile page
+
+### Create a Project
+
+1. Open the dashboard
+2. Click `Create Project`
+3. Enter the repository URL
+4. Configure the project details
+5. Watch the live deployment logs
+
+### Inspect a Project
+
+1. Open a project card from the dashboard
+2. Review deployment status, source, and URL
+3. Open archived build logs if needed
+4. Trigger a redeploy when appropriate
+
+### Adjust Settings
+
+1. Open the project settings page
+2. Edit build and repository settings
+3. Enable or disable auto redeploy
+4. Delete the project using the confirmation flow
+
+---
+
+## 12. Example User Journey
+
+This section walks through a complete, real-world user flow from initial signup to accessing a deployed application.
+
+### Scenario: Deploy a React Portfolio
+
+**User:** Alex, a developer who wants to deploy a personal portfolio project hosted on GitHub.
+
+**Step 1: Discovery and Signup**
+- Alex visits the SourceToLive home page (`/`)
+- Reads the three-step deployment explanation
+- Clicks "Get Started" and is routed to signup
+- Creates account at `/signup` with email and password
+- Receives OTP email, verifies email address
+- Account created and logged in automatically
+
+**Step 2: Dashboard Orientation**
+- Redirected to `/dashboard`
+- Dashboard is empty (first-time user, no projects yet)
+- Sees "Create Your First Project" call-to-action
+- Clicks "New Project" button
+
+**Step 3: Project Creation - Step 1 (Git URL)**
+- Routed to `/create-project` step 1
+- Component: `GitURLInput`
+- Alex enters: `https://github.com/alex/portfolio`
+- Frontend validates the URL format
+- Clicks "Continue" to proceed to step 2
+
+**Step 4: Project Creation - Step 2 (Configuration)**
+- Now at `/create-project` step 2
+- Component: `ProjectDetails`
+- Fills out:
+  - Project Name: `my-portfolio`
+  - Install Command: `npm install` (default)
+  - Build Command: `npm run build` (default)
+  - Build Output Directory: `dist` (default)
+  - Environment Variables: (none, skipped)
+- Clicks "Deploy" to submit
+
+**Step 5: Project Creation - Step 3 (Live Logs)**
+- Routed to `/create-project` step 3
+- Component: `DeploymentLogs`
+- Backend creates ECS task with project metadata
+- Frontend connects to `/api/project/my-portfolio/logs/stream` via EventSource
+- Live log stream begins:
+  ```
+  ✓ Project queued successfully. Task ARN: arn:aws:ecs:...
+  Cloning repository...
+  Running npm install...
+  Installing dependencies... (with progress)
+  Running npm run build...
+  Building portfolio...
+  ✓ Build successful
+  Uploading to S3...
+  ✓ Deployment complete
+  ```
+- Page displays deployment URL: `https://my-portfolio.sourcetolive.dev`
+- User can copy the URL or click to open
+
+**Step 6: Project Detail**
+- Clicks on deployment URL or close button
+- Routed to `/project/my-portfolio`
+- Component: `ProjectDetail`
+- Views:
+  - Project name, repository URL, branch
+  - Deployment status: "finished"
+  - Live URL (clickable, opens in new tab)
+  - Build timestamps (created, started, completed)
+  - Options: Redeploy, View Logs, Settings, Delete
+
+**Step 7: Verify Deployment**
+- Clicks live URL: `https://my-portfolio.sourcetolive.dev`
+- Reverse proxy routes to S3 bucket
+- Portfolio website loads successfully
+- Alex's React app is now live
+
+**Step 8: Project Settings (Optional)**
+- Back on project detail page, clicks "Settings"
+- Routed to `/project/my-portfolio/settings`
+- Component: `ProjectSettings`
+- Can:
+  - Modify build commands
+  - Enable auto-redeploy on GitHub push (via webhook)
+  - Manage environment variables
+  - Delete the project
+- Leaves settings unchanged, returns to detail
+
+**Step 9: Dashboard with Project**
+- Clicks dashboard link or logo
+- Routed to `/dashboard`
+- Project card appears showing:
+  - Project name: "my-portfolio"
+  - Repository: "github.com/alex/portfolio"
+  - Status: "finished" (green badge)
+  - Deployment URL (clickable)
+  - Last deploy time
+  - Search bar to filter projects
+- Can click card to go to detail or create new projects
+
+**End Result:** Alex's portfolio is live at a custom URL, fully deployed and accessible to anyone on the internet. Alex can redeploy anytime by pushing changes to GitHub (if webhooks enabled) or manually via the dashboard.
+
+---
+
+## 13. Page Guide
+
+### Home Page
+
+The home page presents the platform story, feature cards, and a three-step deployment explanation. It also changes the primary CTA based on whether the user already has a session.
+
+### Login Page
+
+The login page handles authenticated entry into the app. It supports credential-based sign-in and routes the user forward to the dashboard on success.
+
+### Signup Page
+
+Signup initiates account creation and OTP verification. It is the entry point for new users who are not yet authenticated.
+
+### Dashboard
+
+The dashboard is the main control panel. It displays the current user, a searchable project list, project counts, and a create-project action.
+
+### Create Project
+
+This page is a three-step wizard:
+
+1. Repository URL input
+2. Project configuration form
+3. Live deployment logs
+
+The live log view uses `EventSource` so users can watch deployment progress as it happens.
+
+### Project Detail
+
+The project detail page shows the project identifier, deployment URL, repository, branch, status, timestamps, and actions such as redeploy and log viewing.
+
+### Project Settings
+
+The settings page lets users adjust the project configuration, manage auto redeploy, and delete the project with confirmation safeguards.
+
+### Profile
+
+The profile page exposes account data and GitHub integration status. It is where users connect or disconnect GitHub from the app.
+
+### Documentation Pages
+
+The app includes embedded documentation viewers for `/api-docs` and `/app-docs`, both rendered inside the same frontend shell.
+
+---
+
+## 14. How Your Data Is Handled
+
+This section explains how SourceToLive stores, protects, and manages your information as you create and deploy projects.
+
+### Your Account Information
+
+When you sign up, SourceToLive stores:
+- Email address and password (encrypted)
+- Your profile name and avatar
+- GitHub connection status (if you connect)
+- All projects you create
+
+Your account data is securely stored and only accessible when you're logged in. When you log out or close the app, your session ends, and you'll be asked to log in again when you return.
+
+### Project Data & Configuration
+
+Each project you create includes:
+
+| What We Store | Why | Visibility |
+| --- | --- | --- |
+| Repository URL | To clone and build your code | Only you can see it |
+| Project Name & ID | To identify and organize your projects | Visible on your dashboard |
+| Build Commands | To compile your code properly | Only you can modify |
+| Environment Variables | To configure your app at build time | Securely stored, not displayed in UI |
+| Deployment URL | To give your app a public web address | Visible to anyone on the internet |
+| Build Logs | To track what happened during deployment | Only you can view detailed logs |
+| Deployment Timestamps | To show when your project was built and deployed | Visible on your project detail page |
+
+### Session & Login
+
+When you log in, SourceToLive creates a secure session token stored on your computer (in browser storage). This token:
+
+- Proves you're authenticated when you use the app
+- Is sent with every request so SourceToLive knows it's you
+- Expires if you don't use the app for an extended period
+- Is cleared when you explicitly log out
+
+**What this means for you:** You stay logged in while actively using the app. If you leave it idle or close and reopen your browser, you may need to log in again.
+
+### Deployment & Application Files
+
+When you deploy a project:
+
+1. **Your code is built** – SourceToLive compiles your repository using the build commands you specify
+2. **Output is stored** – Compiled files (HTML, CSS, JavaScript) are saved so they can be served to visitors
+3. **Your app goes live** – The deployment URL becomes active and your app is accessible on the internet
+4. **Logs are archived** – Build logs are stored temporarily during the build, then moved to archive storage for future reference
+
+**Important:** Your deployed app files are stored publicly so anyone can visit your website. The build logs contain only technical details about the deployment process and are only visible to you.
+
+### Automatic Updates & Real-Time Information
+
+When you create a project, the app updates in real-time:
+
+- **Live logs stream** as your project builds — you see each step as it happens
+- **Project status updates** automatically when the build completes
+- **Deployment URL becomes active** the moment the build finishes
+- **Project list refreshes** so new projects appear in your dashboard immediately
+
+This real-time behavior means you don't need to refresh the page to see what's happening — SourceToLive keeps everything current automatically.
+
+### Deleting Projects
+
+When you delete a project from your dashboard:
+
+- The project **is removed from your account**
+- The **deployment URL is no longer active** (the website disappears)
+- **Build logs are deleted** and recover is not possible
+- **Files are removed** from SourceToLive storage
+
+Once deleted, your project cannot be recovered. If you want to keep a record, download the logs before deleting.
+
+### Data Privacy & Your Information
+
+- **Only you can access your projects** – Other users cannot see your repositories, build commands, or deployment logs
+- **Passwords are encrypted** – SourceToLive never stores your actual password; it only stores a secure hash
+- **GitHub tokens are protected** – If you connect GitHub, your access token is encrypted and never exposed
+- **Build logs are private** – Only you can view build logs and deployment details
+- **Your deployed app is public** – Once deployed, anyone on the internet can visit your site if they have the URL
+
+### Updating Project Settings
+
+You can change project settings at any time from the Project Settings page:
+
+- Modify build and install commands
+- Add or remove environment variables
+- Enable or disable automatic redeploys
+- Update repository or build settings
+
+**Changes take effect** the next time you redeploy your project. Previous deployments remain live until you manually redeploy.
+
+---
+
+## 15. Error Handling & Empty States
+
+### Real Error Scenarios
+
+| Error Type | Cause | UI Behavior | User See |
+| --- | --- | --- | --- |
+| Invalid Git URL | User enters non-GitHub or malformed URL | Frontend validation error | "Please enter a valid GitHub repository URL" in Step 1 |
+| Duplicate Project | Project ID already exists for user | Backend returns 409 Conflict | "A project with this name already exists" on deployment |
+| Authentication Failure | Missing or invalid JWT token | Redirects to `/login` | Session cleared, user must re-authenticate |
+| GitHub Token Missing | User hasn't connected GitHub and repo is private | Build fails in ECS | Log shows "fatal: repository not found" in log stream |
+| Build Command Failed | npm/yarn command exits with non-zero code | Build marked as "failed" | Log shows error, user can redeploy after fixing code |
+| Dependency Installation Failed | Package manager cannot download or compile package | Build marked as "failed" | Log shows permission or network error details |
+| Network/API Failure | Backend unreachable or timeout | Fetch error caught | "Failed to connect to server" error card |
+| CloudWatch Log Stream Error | Build logs cannot be created or accessed | Log stream connection drops | Empty log view with "Log connection lost" message |
+| S3 Upload Failure | Build output cannot be written to S3 | Build marked as "failed" | Log shows S3 error details |
+| Large Repository Timeout | Very large repo takes >15min to clone/build | ECS task timeout | Project marked "failed", user must optimize build |
+
+### Empty States
+
+- **Dashboard (no projects):** "You haven't created any projects yet" with "Create Project" CTA
+- **Search (no matches):** "No projects found matching your search" after filtering
+- **Deployment URL (not ready):** "URL will be available after build completes" during `queued`/`running` states
+- **Logs (empty stream):** "Starting log stream..." while waiting for first log entry
+- **GitHub Repositories (none):** "No repositories found" if user hasn't connected GitHub or has no repos
+
+---
+
+## 16. Limitations
+
+This section outlines real constraints and features not yet implemented in the current version of SourceToLive.
+
+### Current Implementation Constraints
+
+**No Rollback Support**
+- Once a build completes and output is uploaded to S3, there is no mechanism to revert to a previous version.
+- Each redeploy overwrites the previous deployment completely.
+- Workaround: Users must redeploy from a specific Git branch or revert their repository and redeploy.
+
+**Build Performance for Large Repositories**
+- No caching between builds; each deployment starts from a clean environment.
+- Large repositories (`> 500 MB`) or complex build processes can timeout after ~15 minutes.
+- No build optimization strategies (incremental builds, artifact caching) are available.
+- Recommended: Optimize build commands and dependencies before deploying.
+
+**Single Output Per Project**
+- Each project maintains only one active deployment at a time.
+- There is no versioning, staging, or preview URL system.
+- Redeploy immediately replaces the live deployment.
+
+**No Team Collaboration**
+- Only project owner (creator) can access project settings and redeploy.
+- No mechanism to grant access to team members or collaborators.
+- No project-level permissions or multi-user management.
+
+**Environment Variables Limitations**
+- Environment variables are stored in MongoDB and passed to build at runtime.
+- No secret rotation or expiration policies.
+- Secrets are not encrypted at rest (security concern for sensitive tokens).
+
+**Limited Build Customization**
+- Build process is restricted to install and build commands only.
+- No pre-build or post-build hooks available.
+- No support for monorepos or custom build orchestration.
+
+**GitHub Integration Limitations**
+- GitHub OAuth is optional; private repos require manual token input.
+- Webhook auto-redeploy is available but auto-deletes on project deletion.
+- No support for GitLab, Gitea, or other Git platforms.
+
+### Not Implemented (Future Scope)
+
+As noted in the project report, these features are planned but not yet coded:
+- Advanced monitoring (CPU, memory, uptime metrics)
+- Rollback to previous builds
+- Team members and collaboration
+- Email alerts and notifications
+- Custom domains (CNAME support)
+- Build caching and optimization
+- Database backup and migration tools
+- RAG (Retrieval-Augmented Generation) for AI-powered platform guidance – Intelligent cloud-hosted documentation and real-time platform assistance for users and developers
+
+---
+
+## 17. Security Considerations
+
+This section describes the security mechanisms and practices in place for protecting user data and deployed applications.
+
+### Authentication & Authorization
+
+**JWT Bearer Tokens**
+- User receives JWT token after successful login or signup
+- Token stored in browser `localStorage` under key `token`
+- Sent with every authenticated request in header: `Authorization: Bearer <token>`
+- JWT tokens are verified by backend middleware for authentication.
+- No token refresh mechanism; users remain logged in until token expires or localStorage is cleared
+
+**Protected Routes**
+- Dashboard, Create Project, Project Detail, Settings, and Profile pages are protected via middleware
+- Middleware redirects unauthenticated requests to `/login`
+- Protected backend routes check JWT before processing (middleware: `verifyToken`, `isUser`)
+
+**Authorization Levels**
+- `isUser`: Standard authenticated user (can create projects, view own projects)
+- `isAdmin`: Admin user (can view all projects, manage users) [not exposed in frontend]
+- Projects can only be accessed by their owner (enforced in backend query: `owner.userId`)
+
+### GitHub Integration Security
+
+**OAuth Token Storage**
+- GitHub access token is stored encrypted in user document in MongoDB
+- Token is fetched from database only when needed (creating or redeploying projects)
+- Token is passed to Build Server via ECS environment variable for private repo access
+- Token is NOT exposed to frontend; only connection status is displayed
+
+**GitHub Webhook Security**
+- Webhook secret generated and stored per project
+- GitHub payloads are verified using HMAC-SHA256 signature
+- Webhook signature validation prevents unauthorized redeploys
+- Webhook IDs stored in project record for later deletion
+
+### Data Protection
+
+**CORS Configuration**
+- API enforces CORS policy; frontend requests validated by origin
+- Credentials allowed in cross-origin requests
+- Allowed headers: Content-Type, Authorization
+
+**HTTPS/TLS**
+- Production frontend and API served over HTTPS
+- Reverse proxy enforces HTTPS for deployed applications
+- All external API calls use HTTPS (GitHub API, AWS API)
+
+**Input Validation**
+- PROJECT_ID validated: lowercase letters, numbers, hyphens only (regex: `/^[a-z0-9-]+$/`)
+- Git URLs validated against GitHub domain patterns
+- Build commands bound to whitelist of allowed tools
+- Environment variable keys filtered against system variables list
+
+**Backend Middleware**
+- Morgan logging: tracks all incoming requests (dev mode)
+- Error handler: absorbs JSON parse errors and prevents information leakage
+- CORS middleware: validates origin before processing
+
+### Deployment & Infrastructure Security
+
+**AWS Services**
+- ECS tasks run in FARGATE launch type with vpc and security group isolation
+- CloudWatch Logs restricted to project owner queries
+- S3 bucket configured for public read (assets only), private write
+- EC2 reverse proxy running in VPC with restricted security groups
+
+**Container Security**
+- Build Server runs in isolated Docker container
+- Container environment variables exclude sensitive system vars
+- No direct SSH access to build containers
+
+**Logs & Audit**
+- Build logs stored in CloudWatch (real-time) then archived to S3
+- Logs include timestamps, log levels, and output messages
+- No audit trail for user actions (future scope)
+
+---
+
+## 18. Responsive Design & Accessibility
+
+### Responsive Behavior
+
+- Layouts collapse from multi-column to single-column on smaller screens
+- Navigation and tab controls are touch-friendly
+- Cards and forms use flexible spacing and sizing
+
+### Accessibility Notes
+
+- Buttons and links have clear visual states
+- Status indicators use both color and text
+- Forms and project actions are labeled clearly
+- Focus-visible behavior should be preserved when extending the UI
+
+---
+
+## 19. Team & Contributors
+
+This section mirrors the team presentation used on the About page and lists the people behind SourceToLive.
+
+### Meet the Team
+
+SourceToLive is a final-year major project built by BTech CSE students who focused on practical deployment workflows, cloud infrastructure, and a cleaner Git-to-live experience.
+
+### The Team
+
+- [Govind Singh](https://www.linkedin.com/in/govindsingh3011/)
+- [Soumya Kumar Gupta](https://www.linkedin.com/in/soumyakumargupta/)
+- [Vansh Agarwal](https://www.linkedin.com/in/vansh-agarwal-66771925a/)
+- [Aviral Mishra](https://www.linkedin.com/in/aviral-mishra-bb5706262/)
+- [Akshat Kushwaha](https://www.linkedin.com/in/akshat-kushwaha-08a448274/)
+- [Jatin Kumar](https://www.linkedin.com/in/jatin-kumarx-54734524a/)
+
+### Team Message
+
+Build practical systems. Solve real problems. Learn by implementing complete architectures end-to-end.
+
+---
+
+## 20. Support & Reference Links
+
+### In-App Documentation
+
+- [App Documentation](https://www.sourcetolive.dev/app-docs)
+- [API Documentation](https://www.sourcetolive.dev/api-docs)
+
+### Useful UI Entry Points
+
+- [Home](https://www.sourcetolive.dev)
+- [Dashboard](https://www.sourcetolive.dev/dashboard)
+- [Create Project](https://www.sourcetolive.dev/create-project)
+- [Profile](https://www.sourcetolive.dev/profile)
+
+### Contact
+
+If you need to extend the app docs further, use the report as the source of product intent and the page components as the source of implementation truth.
+
+---
+
+_Last updated: 2026-04-08_
+_SourceToLive App Documentation_
