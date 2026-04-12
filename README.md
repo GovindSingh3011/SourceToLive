@@ -96,8 +96,11 @@ _Transform GitHub repositories into managed projects with one-click deployment_
  │   └── 404.html
  │
  ├── 📁 Docs/                    # Documentation
+ │   ├── images/                 # Architecture diagrams and visuals
+ │   │   └── SystemArchitecture.png
  │   ├── APP_DOCUMENTATION.md
- │   └── API_DOCUMENTATION.md
+ │   ├── API_DOCUMENTATION.md
+ │   └── AWS_CONFIGURATION.md
  │
  └── README.md
 ```
@@ -403,6 +406,36 @@ npm run dev
 
 ---
 
+## 🏗️ System Architecture
+
+SourceToLive operates as a distributed deployment platform with the following components working in harmony:
+
+![SourceToLive System Architecture Diagram](./Docs/images/SystemArchitecture.png)
+
+**How it works:**
+
+- **GitHub** triggers a webhook when code is pushed
+- **Backend Server** receives the event and validates the repository
+- **Build Servers** (ECS Fargate) compile and build the project in parallel containers
+- **Log Server** (CloudWatch) streams real-time build logs to the dashboard
+- **S3 Bucket** stores the compiled output in project directories
+- **Reverse Proxy** routes incoming requests to the live deployment
+- **Frontend** monitors progress and displays logs to the user
+
+### Architecture Components
+
+| Component          | Role                        | Technology                  |
+| ------------------ | --------------------------- | --------------------------- |
+| **GitHub**         | Source control & webhooks   | GitHub API + OAuth 2.0      |
+| **Backend Server** | API & orchestration         | Node.js + Express + MongoDB |
+| **Build Servers**  | Multi-process compilation   | AWS ECS Fargate + Docker    |
+| **Log Server**     | Real-time log streaming     | CloudWatch + Node.js        |
+| **S3 Storage**     | Build output storage        | AWS S3 + CloudFront         |
+| **Reverse Proxy**  | URL routing & delivery      | AWS EC2 + Node.js           |
+| **Frontend**       | User dashboard & monitoring | React 19 + Vite + Tailwind  |
+
+---
+
 ## 🔐 Authentication
 
 ### JWT Bearer Token
@@ -442,7 +475,7 @@ Authorization: Bearer <jwt_token>
    ↓
 4️⃣ Build Execution (Docker Container)
    ↓
-5️⃣ Live Log Streaming via EventSource
+5️⃣ Live Log Streaming via CloudWatch
    ↓
 6️⃣ S3 Upload (Build Output)
    ↓
@@ -707,6 +740,7 @@ Commercial use is not allowed without permission.
 
 - 📖 **[App Documentation](./Docs/APP_DOCUMENTATION.md)** – User guide & features
 - 🔌 **[API Documentation](./Docs/API_DOCUMENTATION.md)** – API reference & examples
+- 🛠️ **[AWS Configuration Guide](./Docs/AWS_CONFIGURATION.md)** – Step-by-step AWS setup
 - 🐛 **[Open an Issue](https://github.com/GovindSingh3011/SourceToLive/issues)** – Report bugs or suggest features
 - 💬 **Check existing issues** – Your question might already be answered
 
