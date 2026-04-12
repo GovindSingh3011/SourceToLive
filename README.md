@@ -1,205 +1,299 @@
-# SourceToLive
+<a id="top"></a>
 
-[![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-![Version](https://img.shields.io/badge/version-1.0-blue)
-![Node version](https://img.shields.io/badge/node-%3E%3D18-green)
+<div align="center">
 
-**SourceToLive** is a Git-to-live deployment platform that transforms connected GitHub repositories into managed projects with one-click deployment. Turn your code into a live application in three simple steps: connect a repository, configure your build, and deploy.
+<img src="./client/public/S2L.png" alt="SourceToLive Logo" width="260" style="display:block; margin:-80px;" />
+
+[![License: SourceToLive Custom](https://img.shields.io/badge/License-SourceToLive%20Custom%202026-orange.svg)](./LICENSE)
+![Version](https://img.shields.io/badge/version-1.0-blue?style=flat-square)
+![Node version](https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=flat-square)
+![Status](https://img.shields.io/badge/status-Production%20Ready-success?style=flat-square)
+
+**A Git-to-Live Deployment Platform**
+_Transform GitHub repositories into managed projects with one-click deployment_
+
+[Features](#-features) • [Quick Start](#-installation--setup) • [Documentation](#-documentation) • [Contributing](#-contributing)
+
+</div>
+
+---
+
+**SourceToLive** is a Git-to-live deployment platform that transforms connected GitHub repositories into managed projects with one-click deployment. Turn your code into a live application in **three simple steps**: connect a repository, configure your build, and deploy.
 
 ## 🚀 Features
 
-- **One-Click Deployment** – Deploy from GitHub repositories in three steps
-- **Live Build Logs** – Watch real-time build progress as it happens
-- **Automatic Deployments** – GitHub webhook support for auto-redeploy on push
-- **Build Configuration** – Customize install and build commands per project
-- **Environment Variables** – Secure project-level environment configuration
-- **Project Management** – Dashboard with search, status tracking, and project control
-- **GitHub Integration** – OAuth authentication and repository access
-- **Deployment URLs** – Instant custom URLs for every deployed project (e.g., `https://my-project.sourcetolive.app`)
-- **User Profiles** – Account management with GitHub connection status
-- **In-App Documentation** – API and app docs accessible directly in the UI
-- **Responsive Design** – Works seamlessly on desktop and mobile
+<table>
+<tr>
+<td>
+
+- 🚀 **One-Click Deployment** – Deploy from GitHub in three steps
+- 📊 **Live Build Logs** – Real-time build progress streaming
+- 🔄 **Automatic Deployments** – GitHub webhook auto-redeploy
+- ⚙️ **Build Configuration** – Customize install & build commands
+- 🔐 **Environment Variables** – Secure project configuration
+
+</td>
+<td>
+
+- 📱 **Project Management** – Dashboard with search & control
+- 🔗 **GitHub Integration** – OAuth auth & repository access
+- 🌐 **Deployment URLs** – Custom URLs per project
+- 👤 **User Profiles** – GitHub connection & account management
+- 📚 **In-App Docs** – API & app documentation in UI
+
+</td>
+<td>
+
+- 📲 **Responsive Design** – Desktop & mobile support
+- ⚡ **Real-time Streaming** – Live log updates
+- 🛡️ **Secure Auth** – JWT + OAuth 2.0 support
+- 📧 **Email Notifications** – OTP & deployment alerts
+- 🌍 **Multi-environment** – Dev, staging, production ready
+
+</td>
+</tr>
+</table>
+
+---
 
 ## 📋 Project Structure
 
 ```
-SourceToLive/
-├── Backend-Server/          # Node.js/Express API server
-│   ├── config/             # Configuration management
-│   ├── controllers/        # Request handlers
-│   ├── middleware/         # Auth and verification middleware
-│   ├── models/            # MongoDB schemas
-│   ├── routes/            # API route definitions
-│   ├── utils/             # Helper functions
-│   ├── index.js           # Express app entry point
-│   ├── cloudflared-config.yml
-│   ├── package.json
-│   └── TUNNEL_SETUP.md
-├── Build-Server/           # Docker containerized build environment
-│   ├── Dockerfile         # Container definition
-│   ├── main.sh           # Build orchestration script
-│   ├── script.js         # Build execution logic
-│   └── package.json
-├── client/                # React frontend (Vite)
-│   ├── src/
-│   │   ├── components/    # Reusable React components
-│   │   ├── pages/        # Page-level components
-│   │   ├── App.jsx       # Main app file
-│   │   ├── index.css     # Global styles
-│   │   └── main.jsx      # React entry point
-│   ├── public/           # Static assets
-│   ├── vite.config.js
-│   ├── eslint.config.js
-│   └── package.json
-├── Reverse-Proxy/         # EC2-based reverse proxy for deployed apps
-│   ├── index.js          # Proxy server logic
-│   ├── package.json
-│   └── 404.html
-├── RAG-Server/           # Documentation and AI server
-├── Docs/                 # Documentation
-│   ├── APP_DOCUMENTATION.md
-│   ├── API_DOCUMENTATION.md
-│   └── ...
-└── README.md
+ SourceToLive/
+ ├── 📁 Backend-Server/          # Node.js/Express API server
+ │   ├── config/                 # Configuration management
+ │   ├── controllers/            # Request handlers
+ │   ├── middleware/             # Auth & verification middleware
+ │   ├── models/                 # MongoDB schemas
+ │   ├── routes/                 # API route definitions
+ │   ├── utils/                  # Helper functions
+ │   ├── index.js                # Express app entry point
+ │   ├── cloudflared-config.yml
+ │   ├── package.json
+ │   └── TUNNEL_SETUP.md
+ │
+ ├── 📁 Build-Server/            # Docker containerized build environment
+ │   ├── Dockerfile              # Container definition
+ │   ├── main.sh                 # Build orchestration script
+ │   ├── script.js               # Build execution logic
+ │   └── package.json
+ │
+ ├── 📁 client/                  # React frontend (Vite)
+ │   ├── src/
+ │   │   ├── components/         # Reusable React components
+ │   │   ├── pages/              # Page-level components
+ │   │   ├── App.jsx             # Main app file
+ │   │   ├── index.css           # Global styles
+ │   │   └── main.jsx            # React entry point
+ │   ├── public/                 # Static assets
+ │   ├── vite.config.js
+ │   ├── eslint.config.js
+ │   └── package.json
+ │
+ ├── 📁 Reverse-Proxy/           # EC2-based reverse proxy for deployed apps
+ │   ├── index.js                # Proxy server logic
+ │   ├── package.json
+ │   └── 404.html
+ │
+ ├── 📁 Docs/                    # Documentation
+ │   ├── APP_DOCUMENTATION.md
+ │   └── API_DOCUMENTATION.md
+ │
+ └── README.md
 ```
+
+---
 
 ## 🛠️ Tech Stack
 
-### Frontend
-- **React 19** – UI rendering and component architecture
-- **Vite** – Next-gen build tool and dev server
-- **React Router v7** – Client-side routing
-- **Tailwind CSS** – Utility-first CSS framework
-- **React Markdown** – Markdown rendering for docs
-- **Google OAuth** – Third-party authentication
+<table>
+<tr>
+<th>Frontend</th>
+<th>Backend</th>
+<th>Infrastructure</th>
+</tr>
+<tr>
+<td valign="top">
 
-### Backend
-- **Node.js + Express** – REST API server
-- **MongoDB Atlas** – Document database (user accounts, projects, deployment history)
-- **JWT (jsonwebtoken)** – Stateless authentication
-- **AWS SDK** – Integration with AWS:
-  - **ECS Fargate** – Serverless container orchestration for builds
-  - **CloudWatch Logs** – Real-time build log streaming
-  - **S3** – Build output storage
-- **GitHub OAuth 2.0** – Third-party auth and API integration
-- **Nodemailer + Resend** – Email delivery for OTP and notifications
+- **React 19** – Modern UI rendering
+- **Vite** – Next-gen build tool
+- **React Router v7** – Client-side routing
+- **Tailwind CSS** – Utility-first CSS
+- **React Markdown** – Markdown rendering
+- **Google OAuth** – Third-party auth
+
+</td>
+<td valign="top">
+
+- **Node.js + Express** – REST API
+- **MongoDB Atlas** – Document DB
+- **JWT** – Stateless authentication
+- **AWS SDK** – Cloud integration
+- **GitHub OAuth 2.0** – OAuth provider
+- **Nodemailer + Resend** – Email
 - **Bcrypt** – Password hashing
+
+</td>
+<td valign="top">
+
+- **AWS ECS (Fargate)** – Serverless compute
+- **AWS CloudWatch** – Log management
+- **AWS S3** – File storage
+- **AWS EC2** – Reverse proxy
+- **Docker** – Containerization
+- **GitHub API** – Repository management
+- **Cloudflare Tunnel** – Secure access
+
+</td>
+</tr>
+</table>
+
+### Build System & Additional Tools
+
+- **Docker** – Containerized build environment
 - **Morgan** – HTTP request logging
 - **CORS** – Cross-origin request handling
 
-### Build System
-- **Docker** – Containerized build environment
-- **Node.js** (inside container) – Executes install/build commands
-
-### Infrastructure
-- **AWS ECS (Fargate)** – Serverless compute for builds
-- **AWS CloudWatch** – Log management
-- **AWS S3** – Static file storage
-- **AWS EC2** – Reverse proxy for deployed apps
-- **GitHub API** – Repository and webhook management
-- **Cloudflare Tunnel** – Secure local development access (optional)
+---
 
 ## 📦 Installation & Setup
 
 ### Prerequisites
-- **Node.js** >= 18
-- **npm** or **yarn**
-- **MongoDB Atlas** account
-- **AWS Account** (ECS, S3, CloudWatch, EC2)
-- **GitHub OAuth Application** (for OAuth integration)
-- **.env file** configured with required variables
 
-### 1. Clone the Repository
+| Required         | Version            | Link                                                      |
+| ---------------- | ------------------ | --------------------------------------------------------- |
+| Node.js          | ≥ 18               | [Download](https://nodejs.org/)                           |
+| npm or yarn      | Latest             | Comes with Node.js                                        |
+| MongoDB Atlas    | Cloud              | [Sign up](https://www.mongodb.com/cloud/atlas)            |
+| AWS Account      | Free Tier eligible | [Create account](https://aws.amazon.com/)                 |
+| GitHub OAuth App | Free               | [Setup guide](https://docs.github.com/en/apps/oauth-apps) |
+
+### Quick Start with Docker (Recommended)
+
+> **Fastest way to get started** – All services run with one command
 
 ```bash
 git clone https://github.com/GovindSingh3011/SourceToLive.git
 cd SourceToLive
+docker-compose up
 ```
 
-### 2. Backend Setup
+Frontend: http://localhost:5173
+Backend: http://localhost:3000
+Reverse Proxy: http://localhost:8000
+
+---
+
+### Manual Setup
+
+<table>
+<tr>
+<td>
+
+> **Important Setup Note**
+>
+> Use the [AWS Configuration Guide](./Docs/AWS_CONFIGURATION.md) while completing the manual setup below. It is the source of truth for ECS, S3, IAM, CloudWatch, and proxy-related values.
+
+</td>
+</tr>
+</table>
+
+| AWS Area       | What to Check                                                        |
+| -------------- | -------------------------------------------------------------------- |
+| Backend Server | `CLUSTER`, `TASK`, `AWS_SUBNETS`, `AWS_SECURITY_GROUPS`, `S3_BUCKET` |
+| Build Server   | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`           |
+| Reverse Proxy  | `PORT`, `BASE_PATH`, `AWS credentials`, `AWS_REGION`                 |
+
+#### 1️⃣ Backend Server Setup
 
 ```bash
 cd Backend-Server
 npm install
 ```
 
-Create a `.env` file in `Backend-Server/`:
+**Create `.env` file** in `Backend-Server/`:
 
 ```env
-# Server
+# 📋 Server Configuration
 PORT=3000
-NODE_ENV=development
+NODE_ENV=production
+APP_DOMAIN=sourcetolive.app
 
-# Database
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/sourcetolive
-
-# CORS
-CORS_ORIGIN=http://localhost:5173
-
-# JWT
-JWT_SECRET=your_jwt_secret_key_here
-JWT_EXPIRE=7d
-
-# Email (Resend)
-RESEND_API_KEY=your_resend_api_key
-
-# GitHub OAuth
-GITHUB_CLIENT_ID=your_github_client_id
-GITHUB_CLIENT_SECRET=your_github_client_secret
-GITHUB_REDIRECT_URI=http://localhost:3000/api/auth/github/callback
-
-# AWS
+# ☁️ AWS Configuration
 AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=your_aws_access_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key
-AWS_ECS_CLUSTER=sourcetolive-cluster
-AWS_ECS_TASK_DEFINITION=sourcetolive-build-task
-AWS_ECR_REGISTRY=your_ecr_registry_url
-AWS_S3_BUCKET=sourcetolive-builds
+CLUSTER=<your-ecs-cluster>
+TASK=<your-ecs-task>
+AWS_SUBNETS=<comma-separated-subnet-ids>
+AWS_SECURITY_GROUPS=<comma-separated-security-group-ids>
+S3_BUCKET=<your-s3-bucket>
+AWS_ACCESS_KEY_ID=<your-access-key>
+AWS_SECRET_ACCESS_KEY=<your-secret-key>
 
-# Build
-BUILD_TIMEOUT=900000  # 15 minutes in milliseconds
-S3_BUCKET_REGION=us-east-1
+# 🗄️ Database
+MONGODB_URI=<your-mongodb-connection-string>
 
-# Application Domain
-APP_DOMAIN=sourcetolive.dev
+# 🔐 Authentication
+JWT_SECRET=<strong-random-secret>
+
+# 📧 Email Configuration
+EMAIL_SERVICE=gmail
+EMAIL_USER=<your-email>
+EMAIL_PASSWORD=<gmail-app-password>
+EMAIL_FROM=<sender-name>
+
+# 🌐 OAuth Configuration
+GOOGLE_CLIENT_ID=<your-google-client-id>
+GITHUB_CLIENT_ID=<your-github-client-id>
+GITHUB_CLIENT_SECRET=<your-github-secret>
+GITHUB_CALLBACK_URL=https://yourdomain.com/auth/github/callback
+
+# 🔗 CORS & URLs
+CORS_ORIGIN=https://sourcetolive.dev
+FRONTEND_URL=https://sourcetolive.dev
+API_URL=https://api.sourcetolive.dev
 ```
 
-Start the backend server:
+**Start the backend:**
 
 ```bash
-# Development (with nodemon)
-npm run dev
-
-# Production
-npm start
+npm run dev          # Development
+npm start            # Production
 ```
 
-The backend will be available at `http://localhost:3000`
+✅ Backend: **http://localhost:3000**
 
-### 3. Frontend Setup
+---
+
+#### 2️⃣ Frontend Setup
 
 ```bash
 cd client
 npm install
 ```
 
-Create a `.env.local` file in `client/`:
+**Create `.env` file** in `client/`:
 
 ```env
-VITE_API_URL=http://localhost:3000
-VITE_GOOGLE_CLIENT_ID=your_google_client_id
+# 🔌 API Configuration
+VITE_API_URL=http://localhost:3000          # Backend API URL
+
+# 🌐 OAuth Configuration
+VITE_GOOGLE_CLIENT_ID=<your-google-client-id>
+VITE_GITHUB_CLIENT_ID=<your-github-client-id>
+VITE_GITHUB_REDIRECT_URI=http://localhost:5173/auth/github/callback
 ```
 
-Start the development server:
+**Start the dev server:**
 
 ```bash
 npm run dev
 ```
 
-The frontend will be available at `http://localhost:5173`
+✅ Frontend: **http://localhost:5173**
 
-### 4. Build Server (Optional - For Local Testing)
+---
+
+#### 3️⃣ Build Server Setup _(Optional)_
 
 ```bash
 cd Build-Server
@@ -207,105 +301,178 @@ npm install
 docker build -t sourcetolive-build .
 ```
 
+**Create `.env` file** in `Build-Server/`:
+
+```env
+# ☁️ AWS Credentials
+AWS_ACCESS_KEY_ID=<your-access-key>
+AWS_SECRET_ACCESS_KEY=<your-secret-key>
+AWS_REGION=us-east-1
+```
+
+---
+
+#### 4️⃣ Reverse Proxy Setup _(Optional)_
+
+```bash
+cd Reverse-Proxy
+npm install
+```
+
+**Create `.env` file** in `Reverse-Proxy/`:
+
+```env
+# 🚀 Application Settings
+PORT=8000
+BASE_PATH=https://sourcetolivebucket.s3.us-east-1.amazonaws.com/__outputs
+
+# ☁️ AWS Credentials
+AWS_ACCESS_KEY_ID=<your-access-key>
+AWS_SECRET_ACCESS_KEY=<your-secret-key>
+AWS_REGION=us-east-1
+```
+
+**Start the server:**
+
+```bash
+npm run dev
+```
+
+✅ Reverse Proxy: **http://localhost:8000**
+
+---
+
 ## 🔌 API Routes
 
-### Authentication Routes
-```
-POST   /api/auth/register              # Register new user
-POST   /api/auth/register/verify       # Verify OTP and complete registration
-POST   /api/auth/login                 # Login with credentials
-POST   /api/auth/google                # Google OAuth login
-GET    /api/auth/github/oauth          # Initiate GitHub OAuth flow
-GET    /api/auth/github/callback       # GitHub OAuth callback
-GET    /api/auth/me                    # Get current user info
-POST   /api/auth/github-token          # Save GitHub personal access token
-GET    /api/auth/github-token/status   # Check GitHub connection status
-DELETE /api/auth/github-token          # Disconnect GitHub
-```
+### 🔐 Authentication Routes
 
-### Project Routes
-```
-GET    /api/project                    # List all user projects
-POST   /api/project                    # Create new project
-GET    /api/project/:projectId         # Get project details
-PUT    /api/project/:projectId         # Update project configuration
-DELETE /api/project/:projectId         # Delete project
-GET    /api/project/:projectId/logs/stream     # Stream live build logs (EventSource)
-GET    /api/project/:projectId/logs/archive    # Get archived build logs
-POST   /api/project/:projectId/redeploy        # Trigger manual redeploy
-GET    /api/project/repositories/github        # Fetch user's GitHub repositories
-```
+| Method | Endpoint                        | Description                  |
+| ------ | ------------------------------- | ---------------------------- |
+| POST   | `/api/auth/register`            | Register new user            |
+| POST   | `/api/auth/register/verify`     | Verify OTP & complete signup |
+| POST   | `/api/auth/login`               | Login with credentials       |
+| POST   | `/api/auth/google`              | Google OAuth login           |
+| GET    | `/api/auth/github/oauth`        | Initiate GitHub OAuth        |
+| GET    | `/api/auth/github/callback`     | GitHub OAuth callback        |
+| GET    | `/api/auth/me`                  | Get current user info        |
+| POST   | `/api/auth/github-token`        | Save GitHub token            |
+| GET    | `/api/auth/github-token/status` | Check GitHub connection      |
+| DELETE | `/api/auth/github-token`        | Disconnect GitHub            |
 
-### Webhook Routes
-```
-POST   /api/webhook/github/:projectId  # GitHub webhook trigger
-POST   /api/webhook/gitlab/:projectId  # GitLab webhook trigger
-POST   /api/webhook/enable/:projectId  # Enable auto-redeploy
-POST   /api/webhook/disable/:projectId # Disable auto-redeploy
-GET    /api/webhook/status/:projectId  # Get webhook status
-```
+### 📦 Project Routes
 
-## 📖 Frontend Routes
+| Method | Endpoint                               | Description                   |
+| ------ | -------------------------------------- | ----------------------------- |
+| GET    | `/api/project`                         | List all user projects        |
+| POST   | `/api/project`                         | Create new project            |
+| GET    | `/api/project/:projectId`              | Get project details           |
+| PUT    | `/api/project/:projectId`              | Update project config         |
+| DELETE | `/api/project/:projectId`              | Delete project                |
+| GET    | `/api/project/:projectId/logs/stream`  | Live build logs (EventSource) |
+| GET    | `/api/project/:projectId/logs/archive` | Get archived logs             |
+| POST   | `/api/project/:projectId/redeploy`     | Trigger manual redeploy       |
+| GET    | `/api/project/repositories/github`     | Fetch GitHub repositories     |
 
-```
-/                    # Home / Landing page
-/login              # User login
-/signup             # User registration with OTP
-/dashboard          # Projects dashboard
-/create-project     # 3-step deployment wizard
-/project/:projectId # Project detail & logs view
-/project/:projectId/settings  # Project configuration
-/profile            # User account & GitHub settings
-/about              # About and team page
-/api-docs           # API documentation
-/app-docs           # App documentation
-```
+### 🔗 Webhook Routes
+
+| Method | Endpoint                          | Description            |
+| ------ | --------------------------------- | ---------------------- |
+| POST   | `/api/webhook/github/:projectId`  | GitHub webhook trigger |
+| POST   | `/api/webhook/gitlab/:projectId`  | GitLab webhook trigger |
+| POST   | `/api/webhook/enable/:projectId`  | Enable auto-redeploy   |
+| POST   | `/api/webhook/disable/:projectId` | Disable auto-redeploy  |
+| GET    | `/api/webhook/status/:projectId`  | Get webhook status     |
+
+---
+
+## 🌐 Frontend Routes
+
+| Route                          | Purpose                        |
+| ------------------------------ | ------------------------------ |
+| `/`                            | Home / Landing page            |
+| `/login`                       | User login                     |
+| `/signup`                      | User registration with OTP     |
+| `/dashboard`                   | Projects dashboard             |
+| `/create-project`              | 3-step deployment wizard       |
+| `/project/:projectId`          | Project detail & logs          |
+| `/project/:projectId/settings` | Project configuration          |
+| `/profile`                     | User account & GitHub settings |
+| `/about`                       | About and team page            |
+| `/api-docs`                    | API documentation              |
+| `/app-docs`                    | App documentation              |
+
+---
 
 ## 🔐 Authentication
 
 ### JWT Bearer Token
-All protected endpoints require authorization header:
+
+All protected API endpoints require this header:
+
 ```
 Authorization: Bearer <jwt_token>
 ```
 
-### OAuth Flows
-- **Google OAuth** – Easy signup/login alternative
-- **GitHub OAuth** – Access user's repositories and create webhooks
+### Supported Authentication Methods
+
+| Method               | Use Case                     | Setup                           |
+| -------------------- | ---------------------------- | ------------------------------- |
+| **Email + Password** | Traditional signup/login     | Requires JWT secret             |
+| **Google OAuth**     | Quick sign-up with Google    | Needs Google Client ID          |
+| **GitHub OAuth**     | Repository access & webhooks | Needs GitHub Client ID & Secret |
 
 ### Session Management
-- Token stored in browser `localStorage` as `token`
-- Protected routes redirect to `/login` if unauthenticated
-- No automatic token refresh; user remains logged in until token expires
+
+- 📱 Token stored in browser `localStorage` as `token`
+- 🔒 Protected routes redirect to `/login` if unauthenticated
+- ⏱️ Token expiration enforced; no automatic refresh
+
+---
 
 ## 🚀 Deployment Lifecycle
 
 ### Step-by-Step Flow
-1. **User Creates Project** – Provides GitHub repo URL and build configuration
-2. **Backend Validation** – Validates repo, project ID, and user permissions
-3. **ECS Build Task Queued** – Project sent to AWS ECS as containerized task
-4. **Build Execution** – Container clones repo, installs dependencies, builds project
-5. **Live Log Streaming** – Frontend streams CloudWatch logs in real-time via EventSource
-6. **S3 Upload** – Build output uploaded to S3 bucket for CDN-ready hosting
-7. **URL Activation** – Deployment URL (`https://<projectId>.<domain>`) becomes active
-8. **Project Dashboard** – Project appears in user's dashboard with status and URL
+
+```
+1️⃣ User Creates Project
+   ↓
+2️⃣ Backend Validates Repo
+   ↓
+3️⃣ ECS Build Task Queued
+   ↓
+4️⃣ Build Execution (Docker Container)
+   ↓
+5️⃣ Live Log Streaming via EventSource
+   ↓
+6️⃣ S3 Upload (Build Output)
+   ↓
+7️⃣ URL Activation
+   ↓
+8️⃣ Dashboard Update
+```
 
 ### Deployment States
-- `queued` – Waiting for build to start
-- `running` – Build in progress (logs streaming)
-- `finished` – Build completed, deployment live
-- `failed` – Build failed (logs show error details)
+
+| State      | Meaning                                 |
+| ---------- | --------------------------------------- |
+| `queued`   | Waiting for build to start              |
+| `running`  | Build in progress (logs streaming)      |
+| `finished` | Build completed, deployment live ✅     |
+| `failed`   | Build failed (check logs for errors) ❌ |
+
+---
 
 ## 📊 Database Schema
 
 ### User Model
+
 ```javascript
 {
   _id: ObjectId,
-  email: String,
-  password: String (hashed),
+  email: String (unique),
+  password: String (bcrypt hashed),
   displayName: String,
-  avatar: String,
+  avatar: String (URL),
   githubToken: String (encrypted),
   isVerified: Boolean,
   createdAt: Date,
@@ -314,20 +481,21 @@ Authorization: Bearer <jwt_token>
 ```
 
 ### Project Model
+
 ```javascript
 {
   _id: ObjectId,
   projectId: String (unique per user),
   name: String,
   repositoryUrl: String,
-  branch: String,
-  installCommand: String,
-  buildCommand: String,
-  buildOutputDirectory: String,
-  environmentVariables: Object,
+  branch: String (default: 'main'),
+  installCommand: String (e.g., 'npm install'),
+  buildCommand: String (e.g., 'npm run build'),
+  buildOutputDirectory: String (e.g., 'dist/'),
+  environmentVariables: Object, // key-value pairs
   owner: { userId: ObjectId },
-  status: String (queued, running, finished, failed),
-  deploymentUrl: String,
+  status: String ('queued' | 'running' | 'finished' | 'failed'),
+  deploymentUrl: String (auto-generated),
   deploymentTimestamps: {
     created: Date,
     started: Date,
@@ -340,161 +508,227 @@ Authorization: Bearer <jwt_token>
 }
 ```
 
-## 🔧 Environment Variables
-
-### Backend (.env)
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `PORT` | Server port | `3000` |
-| `MONGODB_URI` | MongoDB connection string | `mongodb+srv://...` |
-| `JWT_SECRET` | Secret key for JWT signing | `your_secret` |
-| `GITHUB_CLIENT_ID` | GitHub OAuth app ID | From GitHub settings |
-| `GITHUB_CLIENT_SECRET` | GitHub OAuth secret | From GitHub settings |
-| `AWS_REGION` | AWS region for services | `us-east-1` |
-| `AWS_ACCESS_KEY_ID` | AWS access key | From AWS IAM |
-| `AWS_SECRET_ACCESS_KEY` | AWS secret key | From AWS IAM |
-| `AWS_S3_BUCKET` | S3 bucket for build output | `sourcetolive-builds` |
-
-### Frontend (.env.local)
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `VITE_API_URL` | Backend API base URL | `http://localhost:3000` |
-| `VITE_GOOGLE_CLIENT_ID` | Google OAuth client ID | From Google Console |
+---
 
 ## 🧪 Development
 
-### Running Both Servers Locally
+### Running All Services Locally
 
 ```bash
-# Terminal 1 - Backend
+# Terminal 1 - Backend API
 cd Backend-Server
 npm run dev
 
-# Terminal 2 - Frontend
+# Terminal 2 - Frontend (another terminal)
 cd client
 npm run dev
+
+# Terminal 3 - Reverse Proxy (optional)
+cd Reverse-Proxy
+npm run dev
 ```
+
+After startup, access:
+
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:3000
+- **Reverse Proxy**: http://localhost:8000
 
 ### Building for Production
 
 **Frontend:**
+
 ```bash
 cd client
-npm run build
-# Output: dist/
+npm run build    # Output: dist/
+npm run preview  # Preview production build
 ```
 
 **Backend:**
+
 - No build needed; runs Node.js directly
 
-### Linting & Code Quality
+### Code Quality & Linting
 
 **Frontend:**
+
 ```bash
 cd client
-npm run lint
+npm run lint     # Run ESLint
+npm run lint:fix # Fix lint issues
 ```
+
+---
 
 ## 📚 Documentation
 
-- **[App Documentation](./Docs/APP_DOCUMENTATION.md)** – User-facing app guide
-- **[API Documentation](./Docs/API_DOCUMENTATION.md)** – Detailed API reference
+- **[App Documentation](./Docs/APP_DOCUMENTATION.md)** – User-facing feature guide
+- **[API Documentation](./Docs/API_DOCUMENTATION.md)** – Comprehensive API reference
+- **[AWS Configuration Guide](./Docs/AWS_CONFIGURATION.md)** – Full AWS setup for ECS, S3, IAM, and CloudWatch
+
+Browse documentation directly in the app at `/api-docs` and `/app-docs`.
+
+---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please follow these steps:
+We welcome contributions! Follow these steps to contribute:
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Make your changes and commit: `git commit -m "feat: add your feature"`
-4. Push to the branch: `git push origin feature/your-feature`
-5. Open a Pull Request
+### 1. Fork & Clone
+
+```bash
+git clone https://github.com/GovindSingh3011/SourceToLive.git
+cd SourceToLive
+git checkout -b feature/your-feature
+```
+
+### 2. Make Changes & Commit
+
+Make your changes and commit using conventional commit format:
+
+```bash
+git commit -m "feat(scope): description of your feature"
+```
+
+### 3. Push & Create PR
+
+```bash
+git push origin feature/your-feature
+```
+
+Then open a Pull Request on GitHub with a clear description of your changes.
 
 ### Commit Message Guidelines
 
-Follow conventional commit format for consistency:
-```
-type(scope): subject
+Follow **Conventional Commits** format:
 
-- feat: new feature
-- fix: bug fix
-- docs: documentation changes
-- style: code style (no logic change)
-- refactor: code refactoring
-- test: adding tests
-- chore: build, dependencies, tooling
+```
+<type>(<scope>): <subject>
+
+- feat: New feature
+- fix: Bug fix
+- docs: Documentation changes
+- style: Code style (no logic changes)
+- refactor: Code refactoring
+- test: Adding or updating tests
+- chore: Build, dependencies, tooling
 ```
 
-Example:
+**Examples:**
+
 ```
 feat(auth): add GitHub OAuth login
 fix(dashboard): resolve project search filtering
 docs: update API documentation
+refactor(api): simplify error handling
 ```
-
-## 📋 Limitations & Future Scope
-
-### Current Limitations
-- No rollback to previous deployments
-- Single deployment per project (overwrites on redeploy)
-- No team collaboration or shared projects
-- No build caching or optimization
-- No custom domains (CNAME support)
-- No advanced monitoring or metrics
-
-### Planned Features
-- Deployment rollback
-- Team members and collaboration
-- Build caching and optimization
-- Custom domain support
-- Advanced monitoring and alerts
-- Email notifications
-- Staging environments
-- RAG (Retrieval-Augmented Generation) for AI-powered platform guidance – Assist users and developers with intelligent cloud-hosted documentation and real-time platform assistance
-
-## 🔒 Security & Privacy
-
-- **Passwords** – Hashed with bcrypt
-- **Tokens** – Encrypted at rest and in transit
-- **GitHub tokens** – Encrypted in MongoDB
-- **Environment variables** – Secure storage (improvement: add encryption at rest)
-- **CORS** – Origin validation on all cross-origin requests
-- **HTTPS/TLS** – All production connections encrypted
-- **Input validation** – All user inputs validated before processing
-
-## 👥 Team & Contributors
-
-SourceToLive is built by BTech CSE final-year students focused on practical deployment workflows and cloud infrastructure.
-
-- [Govind Singh](https://www.linkedin.com/in/govindsingh3011/)
-- [Soumya Kumar Gupta](https://www.linkedin.com/in/soumyakumargupta/)
-- [Vansh Agarwal](https://www.linkedin.com/in/vansh-agarwal-66771925a/)
-- [Aviral Mishra](https://www.linkedin.com/in/aviral-mishra-bb5706262/)
-- [Akshat Kushwaha](https://www.linkedin.com/in/akshat-kushwaha-08a448274/)
-- [Jatin Kumar](https://www.linkedin.com/in/jatin-kumarx-54734524a/)
-
-## 📄 License
-
-This project is licensed under the **Apache License 2.0** – see the [LICENSE](LICENSE) file for details.
-
-Apache 2.0 provides:
-- ✅ **Patent Protection** – Explicit patent grant from contributors
-- ✅ **Commercial Use** – Allowed for commercial applications
-- ✅ **Modification** – You can modify the code
-- ✅ **Distribution** – You can distribute modified versions
-- ✅ **Sublicensing** – You can sublicense the software
-- ✅ **Same License** – Requires modified versions to use same license
-
-## 📞 Support
-
-For issues, questions, or suggestions:
-- Open an [Issue](https://github.com/GovindSingh3011/SourceToLive/issues)
-- Check existing [Documentation](./Docs/APP_DOCUMENTATION.md)
-- Review the [API Documentation](./Docs/API_DOCUMENTATION.md)
 
 ---
 
-**Last Updated:** April 8, 2026  
-**Version:** 1.0  
+## 📋 Roadmap
 
-**Deploy your code with confidence. SourceToLive makes it simple.**
+### Current Limitations ⚠️
+
+- ❌ No rollback to previous deployments
+- ❌ Single deployment per project (overwrites on redeploy)
+- ❌ No team collaboration or shared projects
+- ❌ No build caching or optimization
+- ❌ No custom domains (CNAME support)
+- ❌ No advanced monitoring or metrics
+
+### Planned Features 🚀
+
+| Feature                            | Status  | Priority |
+| ---------------------------------- | ------- | -------- |
+| Deployment Rollback                | Planned | High     |
+| Team Collaboration                 | Planned | High     |
+| Build Caching                      | Planned | Medium   |
+| Custom Domain Support              | Planned | Medium   |
+| Advanced Monitoring & Alerts       | Planned | Medium   |
+| Email Notifications                | Planned | Medium   |
+| Staging Environments               | Planned | Low      |
+| AI-Powered Platform Guidance (RAG) | Planned | Low      |
+
+---
+
+## 🔒 Security & Privacy
+
+### Security Measures
+
+| Feature                   | Implementation                                 |
+| ------------------------- | ---------------------------------------------- |
+| **Passwords**             | Hashed with bcrypt (salt rounds: 10)           |
+| **Tokens**                | JWT encrypted at rest and in transit           |
+| **GitHub Tokens**         | Encrypted in MongoDB before storage            |
+| **Environment Variables** | Secure storage (TODO: add encryption at rest)  |
+| **CORS**                  | Origin validation on all cross-origin requests |
+| **HTTPS/TLS**             | All production connections encrypted           |
+| **Input Validation**      | All user inputs validated before processing    |
+| **XSS Protection**        | Content security policy headers                |
+
+### Best Practices for Users
+
+- ✅ Use strong, unique passwords
+- ✅ Enable 2FA on GitHub and connected accounts
+- ✅ Regularly rotate access tokens
+- ✅ Use HTTPS in production
+- ✅ Keep dependencies updated
+- ✅ Review environment variables permissions
+
+For detailed security guidelines, see [SECURITY.md](SECURITY.md)
+
+---
+
+## 👥 Team
+
+SourceToLive is built by **BTech CSE final-year students** focused on practical deployment workflows and cloud infrastructure.
+
+| Contributor        | LinkedIn                                                           | GitHub Profile                                           |
+| ------------------ | ------------------------------------------------------------------ | -------------------------------------------------------- |
+| Govind Singh       | [LinkedIn](https://www.linkedin.com/in/govindsingh3011/)           | [@GovindSingh3011](https://github.com/GovindSingh3011)   |
+| Soumya Kumar Gupta | [LinkedIn](https://www.linkedin.com/in/soumyakumargupta/)          | [@soumyakumargupta](https://github.com/soumyakumargupta) |
+| Vansh Agarwal      | [LinkedIn](https://www.linkedin.com/in/vansh-agarwal-66771925a/)   | [@Vanshagarwl](https://github.com/Vanshagarwl)           |
+| Aviral Mishra      | [LinkedIn](https://www.linkedin.com/in/aviral-mishra-bb5706262/)   | [@AVIRALMISHRA1](https://github.com/AVIRALMISHRA1)       |
+| Akshat Kushwaha    | [LinkedIn](https://www.linkedin.com/in/akshat-kushwaha-08a448274/) | [@akshatkushwaha03](https://github.com/akshatkushwaha03) |
+| Jatin Kumar        | [LinkedIn](https://www.linkedin.com/in/jatin-kumarx-54734524a/)    | [@Jatin-kumarx](https://github.com/Jatin-kumarx)         |
+
+---
+
+## 📄 License
+
+This project is licensed under the **SourceToLive Custom License**. <br>
+Commercial use is not allowed without permission.
+
+---
+
+## 📞 Support & Feedback
+
+### Getting Help
+
+- 📖 **[App Documentation](./Docs/APP_DOCUMENTATION.md)** – User guide & features
+- 🔌 **[API Documentation](./Docs/API_DOCUMENTATION.md)** – API reference & examples
+- 🐛 **[Open an Issue](https://github.com/GovindSingh3011/SourceToLive/issues)** – Report bugs or suggest features
+- 💬 **Check existing issues** – Your question might already be answered
+
+### Contributing
+
+Found a bug? Want to add a feature? Contributions are welcome!
+See [Contributing](#-contributing) section above for guidelines.
+
+---
+
+<div align="center">
+
+### ⭐ If you find SourceToLive helpful, please give us a star!
+
+```
+Deploy your code with confidence. SourceToLive makes it simple.
+```
+
+**Last Updated:** April 9, 2026
+**Version:** 1.0
+**Status:** Production Ready ✅
+
+[Back to top](#top)
+
+</div>
