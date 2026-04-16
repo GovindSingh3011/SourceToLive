@@ -4,7 +4,7 @@
 
 <img src="./client/public/S2L.png" alt="SourceToLive Logo" width="260" style="display:block; margin:-80px;" />
 
-[![License: SourceToLive Custom](https://img.shields.io/badge/License-SourceToLive%20Custom%202026-orange.svg)](./LICENSE)
+[![License](https://img.shields.io/badge/license-SourceToLive%20Custom-blue)](./LICENSE)
 ![Version](https://img.shields.io/badge/version-1.0-blue?style=flat-square)
 ![Node version](https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=flat-square)
 ![Status](https://img.shields.io/badge/status-Production%20Ready-success?style=flat-square)
@@ -708,13 +708,11 @@ refactor(api): simplify error handling
 - ✅ Keep dependencies updated
 - ✅ Review environment variables permissions
 
-For detailed security guidelines, see [SECURITY.md](SECURITY.md)
-
 ---
 
 ## 👥 Team
 
-SourceToLive is built by **BTech CSE final-year students** focused on practical deployment workflows and cloud infrastructure.
+SourceToLive is developed by a team of developers focused on implementing real-world deployment workflows, cloud infrastructure, and scalable application delivery while continuously learning and evolving.
 
 | Contributor        | LinkedIn                                                           | GitHub Profile                                           |
 | ------------------ | ------------------------------------------------------------------ | -------------------------------------------------------- |
@@ -726,11 +724,15 @@ SourceToLive is built by **BTech CSE final-year students** focused on practical 
 | Jatin Kumar        | [LinkedIn](https://www.linkedin.com/in/jatin-kumarx-54734524a/)    | [@Jatin-kumarx](https://github.com/Jatin-kumarx)         |
 
 ---
+## ⚖️ Legal Notice
+
+This repository is intended for learning, reference, and non-commercial exploration.  
+Unauthorized commercial usage, reproduction, or deployment of this project is not permitted without prior authorization.
 
 ## 📄 License
 
-This project is licensed under the **SourceToLive Custom License**. <br>
-Commercial use is not allowed without permission.
+This project is licensed under the **SourceToLive Custom License**.  
+Usage for commercial purposes requires prior permission from the Primary Developer.
 
 ---
 
@@ -762,6 +764,10 @@ Deploy your code with confidence. SourceToLive makes it simple.
 **Last Updated:** April 9, 2026
 **Version:** 1.0
 **Status:** Production Ready ✅
+
+---
+
+© 2026 SourceToLive. All rights reserved.  
 
 [Back to top](#top)
 
