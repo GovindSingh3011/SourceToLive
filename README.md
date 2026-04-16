@@ -4,7 +4,7 @@
 
 <img src="./client/public/S2L.png" alt="SourceToLive Logo" width="260" style="display:block; margin:-80px;" />
 
-[![License](https://img.shields.io/badge/license-SourceToLive%20Custom-blue)](./LICENSE)
+[![License](https://img.shields.io/badge/license-SourceToLive%20Custom-blue)](./LICENSE.md)
 ![Version](https://img.shields.io/badge/version-1.0-blue?style=flat-square)
 ![Node version](https://img.shields.io/badge/node-%3E%3D18-brightgreen?style=flat-square)
 ![Status](https://img.shields.io/badge/status-Production%20Ready-success?style=flat-square)
@@ -724,6 +724,7 @@ SourceToLive is developed by a team of developers focused on implementing real-w
 | Jatin Kumar        | [LinkedIn](https://www.linkedin.com/in/jatin-kumarx-54734524a/)    | [@Jatin-kumarx](https://github.com/Jatin-kumarx)         |
 
 ---
+
 ## ⚖️ Legal Notice
 
 This repository is intended for learning, reference, and non-commercial exploration.  
@@ -767,7 +768,7 @@ Deploy your code with confidence. SourceToLive makes it simple.
 
 ---
 
-© 2026 SourceToLive. All rights reserved.  
+© 2026 SourceToLive. All rights reserved.
 
 [Back to top](#top)
 
